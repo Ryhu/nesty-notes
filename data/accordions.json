@@ -1,0 +1,114 @@
+[
+  {
+    "id": "welcome",
+    "title": "STEP 1: Requirements Clarification / Ask Questions!",
+    "children": [
+      {
+        "id": "welcome-intro",
+        "type": "text",
+        "content": "\n## 1. **Requirements clarification**\n\nBefore designing anything, define what the system actually needs to do.\n\nYou usually want to establish:\n\nWho are the users?\nWhat are the core actions?\nWhat is explicitly out of scope?\nDoes it need real-time behavior?\nHow much data are we dealing with?\nHow many users?\nWhat consistency guarantees matter?\nWhat matters most: latency, availability, durability, cost?\n\nFor example, for a stock ticker:\n\nDo users need live prices, or is a 5–10 second delay acceptable?\n\nThat one requirement could determine whether you use polling, SSE, or WebSockets.\n"
+      }
+    ]
+  },
+  {
+    "id": "getting-started",
+    "title": "STEP 2: Functional requirements",
+    "children": [
+      {
+        "id": "getting-started-text",
+        "type": "text",
+        "content": "These describe what the system does.\n\n**For a ticketing system:**\n\nCreate tickets\n\nUpdate tickets\n\nAssign tickets\n\nSearch tickets\n\nFilter tickets\n\nComment on tickets\n\nNotify users\n\n\n**For a chat system:**\n\nSend messages\n\nReceive messages\n\nStore history\n\nShow online status\n\nDeliver notifications\n\n\n**You usually identify only the most important 3–5 functions first.**"
+      }
+    ]
+  },
+  {
+    "id": "ideas",
+    "title": "STEP 3: Non-Functional Requirements",
+    "children": [
+      {
+        "id": "ideas-text",
+        "type": "text",
+        "content": "\nThese describe how well the system needs to operate.\n\nCommon ones include:\n\n\nScalability  \nAvailability  \nReliability  \nLatency  \nDurability  \nConsistency  \nSecurity  \nMaintainability  \nObservability  \nCost  \n\n\nThis is where important tradeoffs start appearing.\n\nFor example:\n\nFor chat messages, durability is very important because users shouldn't lose messages. For online presence, eventual consistency is probably fine.\n\n## YOU SAY:\nyou probably only need 3-4 of them, ask which ones you think are most important"
+      },
+      {
+        "id": "c4cf013d-0b33-4325-9b0e-120ef8ee8c50",
+        "type": "accordion",
+        "accordion": {
+          "id": "66ed643b-4f40-47ca-a873-3a0e72675b3f",
+          "title": "Scalability",
+          "children": [
+            {
+              "id": "e6833c4c-8037-4eb7-861b-486d181222ac",
+              "type": "text",
+              "content": "In system design, scalability means:\n**\"Can the system handle significantly more load without falling apart or requiring a complete redesign?\"**\n\nthese situations can happen when your app takes on new responsibilities or new clients, or just burst traffic events. \n\nIRL, these burst traffic events are things like, people ordering a lot more food during lunchtime vs the rest, or Ecommerce stores getting a LOT more traffic during/leading up to the holidays, or black friday selling a lot, or everyones favorite celebrity just farted on live TV and social media is going crazy and millions of events are happening on a single post within minutes.\n\nfor most cases, this is horizontal scaling, this is the P(artition) in the CAP theorum\n\nThere are usually 2 types of scaling:  \n\n**Vertial Scaling:**  \nwhere the machine that is being bogged down is just upgraded.\nThis isnt guna happen. It costs more money to upgrade a single machine, but is an option in cheaper builds/smaller builds when you just need some power now without added complexity.  \n\n**Horizontal Scaling:**  \n\nIt means adding more machines, probably fed by a load balancer or queues.\nIs probably also balanced out by adding utility, like adding a cache, database indexing.\n\nCommon answers involve load balancers, stateless servers, horizontal scaling, caching, database indexing, read replicas, partitioning/sharding, queues, and CDNs.\n\n## WHEN?\nyou mention this when you think that the amount of users or input is guna get out of hand\n\n## YOU SAY:\nIn the non-functional requirements step, you usually bring up scalability by turning it into an expected growth/load requirement, not by immediately naming technologies.\n\nA natural interview phrasing would be:\n\n**“For scalability, I’d like to understand the expected traffic and growth. Are we designing for thousands of users, millions of users, or potentially much larger scale? I’d also want to know whether the workload is mostly reads, writes, or both.”**\n\nThat sounds much more realistic than saying:\n\n**“We need Redis, sharding, and Kubernetes.”**"
+            }
+          ]
+        }
+      },
+      {
+        "id": "fdd0ba83-4d75-4507-a54f-b9feb6b6e9be",
+        "type": "accordion",
+        "accordion": {
+          "id": "e270d1de-1952-455b-a3c4-55b959fba77c",
+          "title": "Availability",
+          "children": [
+            {
+              "id": "094460ea-2ef9-4961-a55a-3fdf3db8fd1a",
+              "type": "text",
+              "content": "In system design, availability means:\n\n**How often the system is up and able to successfully serve users when they need it.**\n\n<br>\n\n### What counts as “unavailable”?\n\nIt does not necessarily mean the entire system is completely dead.\n\nA system may be considered unavailable if users cannot perform the operation they need.\n\nFor example, in an e-commerce app:\n\nHomepage loads      ✅\nProduct search works ✅\nCheckout fails       ❌\n\nThe website is technically running, but the checkout service is unavailable for that function.\n\n### Availability generally means redundancy:\n              Load Balancer\n             /             \\\n        Server A         Server B\n             \\             /\n                Database\nif server A fails, server B takes over.\n\n## WHEN? \nif a part of this service fails, is it catastrophic for your users?\n\n\n## YOU SAY:\nA natural way to bring it up is:\n\n**“For availability, are there any uptime requirements? For example, is occasional downtime acceptable, or is this a business-critical system where we'd want something like 99.99% availability?”**\n\nThen connect that requirement to your architecture later:\n\n**“Because availability is important here, I would avoid single points of failure by running multiple application instances behind a load balancer and using database replication.”**"
+            }
+          ]
+        }
+      },
+      {
+        "id": "7614090d-810a-495b-95de-19a2b3d995e6",
+        "type": "accordion",
+        "accordion": {
+          "id": "fbfc85ce-4aa4-41a2-b124-62d10b8f0f62",
+          "title": "New accordion",
+          "children": []
+        }
+      },
+      {
+        "id": "eb50065e-888f-489c-85c2-f2c127c34753",
+        "type": "accordion",
+        "accordion": {
+          "id": "aca9e454-2ceb-46ea-a11f-f85c7a791af1",
+          "title": "New accordion",
+          "children": []
+        }
+      },
+      {
+        "id": "62bc9d34-99b6-4512-9806-c47e8c61bf2f",
+        "type": "accordion",
+        "accordion": {
+          "id": "2b84d2b2-0d44-4636-ba94-5e8e97ce6d94",
+          "title": "New accordion",
+          "children": []
+        }
+      }
+    ]
+  },
+  {
+    "id": "notes",
+    "title": "Notes",
+    "children": [
+      {
+        "id": "notes-text",
+        "type": "text",
+        "content": "Markdown supports `inline code`, links, lists, headings, and more."
+      }
+    ]
+  },
+  {
+    "id": "resources",
+    "title": "Resources",
+    "children": [
+      {
+        "id": "resources-text",
+        "type": "text",
+        "content": "Add your useful links and reference material here."
+      }
+    ]
+  }
+]
