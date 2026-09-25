@@ -28,7 +28,7 @@
       {
         "id": "ideas-text",
         "type": "text",
-        "content": "\nThese describe how well the system needs to operate.\n\nCommon ones include:\n\n\nScalability  \nAvailability  \nReliability  \nLatency  \nDurability  \nConsistency  \nSecurity  \nMaintainability  \nObservability  \nCost  \n\n\nThis is where important tradeoffs start appearing.\n\nFor example:\n\nFor chat messages, durability is very important because users shouldn't lose messages. For online presence, eventual consistency is probably fine.\n\n## YOU SAY:\nyou probably only need 3-4 of them, ask which ones you think are most important"
+        "content": "\nThese describe how well the system needs to operate.\n\nCommon ones include:\n\nCAP Theorem\nScalability  \nAvailability  \n\nLatency  \n\nSecurity  \nDurability  \nFault Tolerance  \n\nObservability   \n\nEnvironmental Constraints.  \nCompliance.  \n\n\nThis is where important tradeoffs start appearing.\n\nFor example:\n\nFor chat messages, durability is very important because users shouldn't lose messages. For online presence, eventual consistency is probably fine.\n\n## YOU SAY:\nyou probably only need 3-4 of them, ask which ones you think are most important"
       },
       {
         "id": "c4cf013d-0b33-4325-9b0e-120ef8ee8c50",
@@ -65,8 +65,14 @@
         "type": "accordion",
         "accordion": {
           "id": "fbfc85ce-4aa4-41a2-b124-62d10b8f0f62",
-          "title": "New accordion",
-          "children": []
+          "title": "CAP Theorem",
+          "children": [
+            {
+              "id": "e28e7924-bb94-465f-a1e6-65518de94544",
+              "type": "text",
+              "content": "The CAP theorem is:  \n**any distributed data store can provide at most two of three guarantees: consistency, availability, and partition tolerance**  \nThe important caveat is that CAP only matters when there is a network partition. Whats that?  \n\nA network partition happens when parts of a distributed system are still running, but they cannot communicate with each other over the network.\n\nFor example:\n\nNode A  ❌────❌  Node B\n\nBoth database nodes are alive, but the connection between them is broken.\n\n<br>\n\n#### the **C(onsistency)** means **Every read receives the most recent write, or an error.**\nin other words, when you go fetch the data, the data is either CORRECT, or NOT AVAILABLE. Sometimes your process needs the freshest version of some data, and if its not available, the DB will just fail under those conditions for Consistency\n\n#### the **A(vailability)** means **Keep responding, even if data may be stale**\nthe opposite of C, where as long as your node is online, it will always return a non error response. \nThe idea behind A is \"eventual consistancy\", where the data you get right now might not be the most fresh, but the fresh data is coming, you'll just hand out whatever you have in the meantime\n\n#### the **P(artition tolerance)** means **you can split the data store into multiple parts.**\n\n<br>\n\n### How is this useful for us?\nin most cases, the CAP theorem will apply to databases, and thats what we'll use to choose what DB we use.  \nThe CAP theorem essentially says we have 3 different types of databases: \nAC - Consistant and Available\nAP - PartitionTolerant and Available\nCP - PartitionTolerant and Consistent\n\nIn terms of SYSTEM DESIGN, we're mostly working with DISTRIBUTED SYSTEMS, so the P is guaranteed, leaving us with just 2, AP and CP\n\nfor the record, AC dbs are just your regular ordinary DBs, like postgres. They're just a single machine, so they are always consistent because they are the single source of truth, and always available because their data is always correct.\n\nCP dbs are, in a nutshell, expected to always be right. The most common example is for banks, you dont want be be able to withdraw money from an account that has no money, but the bank just doesnt know it yet. The majority of databases out there will conform to this. \n\nOn the other hand, AP dbs would just keep serving the data they have on hand. This could be useful for something like social media feeds, where even if the one server doesnt have the most recent data for the last 5 seconds, it still has everything before that, and serving all that relevent data is much more prefered than serving an error because it doesnt have the last 5 seconds. \n\n**USABLE INFO:** in terms of use cases: CP for everything...mostly, and AP for:\n\nsocial feeds   \nproduct catalogs   \nanalytics  \nmetrics/logging  \nrecommendation systems   \nshopping cart state in some architectures  \nDNS-like systems  \nsystems spread across multiple regions  \n\nwherever you're ok with stale data"
+            }
+          ]
         }
       },
       {
@@ -74,8 +80,14 @@
         "type": "accordion",
         "accordion": {
           "id": "aca9e454-2ceb-46ea-a11f-f85c7a791af1",
-          "title": "New accordion",
-          "children": []
+          "title": "Consistency",
+          "children": [
+            {
+              "id": "d6308543-e599-465c-83a3-ae64df5ccacb",
+              "type": "text",
+              "content": "In system design, consistency means:  \n**\"How quickly and how reliably can all users or services see the same, up-to-date data after a change happens?\"**\n\nIn distributed systems, when an update happens and for some reason, your machines cant talk to each other, what do you do?\n(Consistency matters only in network partitions/down times, cuz if nothing bad happens then you're always 100% consistent)\n\n"
+            }
+          ]
         }
       },
       {

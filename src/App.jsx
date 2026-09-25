@@ -75,6 +75,22 @@ function findAccordion(items, targetId) {
   return null;
 }
 
+function findAccordionPath(items, targetId, path = []) {
+  for (const item of items) {
+    const nextPath = [...path, item.id];
+    if (item.id === targetId) return nextPath;
+
+    for (const child of item.children) {
+      if (child.type === "accordion") {
+        const match = findAccordionPath([child.accordion], targetId, nextPath);
+        if (match) return match;
+      }
+    }
+  }
+
+  return null;
+}
+
 function Markdown({ content }) {
   const html = DOMPurify.sanitize(marked.parse(content));
   return (
@@ -173,20 +189,18 @@ function AccordionItem({
   return (
     <div
       ref={itemRef}
+      id={`accordion-${accordion.id}`}
       className={`accordion-item depth-${depth % 8} ${
         isEditing ? "is-editing" : ""
       }`}>
       <h2 className="accordion-header">
-        <div
-          className={`accordion-button ${open ? "" : "collapsed"}`}
-        >
+        <div className={`accordion-button ${open ? "" : "collapsed"}`}>
           <button
             type="button"
             className="accordion-title-toggle"
             aria-expanded={open}
             aria-controls={`panel-${accordion.id}`}
-            onClick={() => onToggle(accordion.id)}
-          >
+            onClick={() => onToggle(accordion.id)}>
             <span className="title-text">
               {accordion.title || "Untitled accordion"}
             </span>
@@ -200,8 +214,7 @@ function AccordionItem({
             onClick={() => {
               setIsEditing((current) => !current);
               if (!open) onToggle(accordion.id, true);
-            }}
-          >
+            }}>
             {isEditing ? "Done" : "Edit"}
           </button>
           <button
@@ -294,7 +307,10 @@ function AccordionItem({
           {isEditing && (
             <div className="add-control">
               {showAddMenu ? (
-                <div className="btn-group" role="group" aria-label="Add content">
+                <div
+                  className="btn-group"
+                  role="group"
+                  aria-label="Add content">
                   <button
                     type="button"
                     className="btn btn-sm btn-success"
@@ -330,11 +346,39 @@ function AccordionItem({
   );
 }
 
+function DrawerOutline({ accordions, onSelect }) {
+  return (
+    <ul className="drawer-outline">
+      {accordions.map((accordion) => {
+        const nestedAccordions = accordion.children
+          .filter((child) => child.type === "accordion")
+          .map((child) => child.accordion);
+
+        return (
+          <li key={accordion.id}>
+            <button type="button" onClick={() => onSelect(accordion.id)}>
+              {accordion.title || "Untitled accordion"}
+            </button>
+            {nestedAccordions.length > 0 && (
+              <DrawerOutline
+                accordions={nestedAccordions}
+                onSelect={onSelect}
+              />
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export default function App() {
   const [accordions, setAccordions] = useState([]);
   const [openIds, setOpenIds] = useState(() => new Set());
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [status, setStatus] = useState("Loading…");
   const loaded = useRef(false);
+  const drawerRef = useRef(null);
 
   useEffect(() => {
     fetch("/api/accordions")
@@ -385,6 +429,30 @@ export default function App() {
     });
   }, [accordions]);
 
+  useEffect(() => {
+    if (!isDrawerOpen) return;
+
+    const closeWithEscape = (event) => {
+      if (event.key === "Escape") setIsDrawerOpen(false);
+    };
+
+    const closeWhenClickingAway = (event) => {
+      if (drawerRef.current && !drawerRef.current.contains(event.target)) {
+        setIsDrawerOpen(false);
+        if (drawerRef.current.contains(document.activeElement)) {
+          document.activeElement.blur();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", closeWithEscape);
+    document.addEventListener("pointerdown", closeWhenClickingAway);
+    return () => {
+      document.removeEventListener("keydown", closeWithEscape);
+      document.removeEventListener("pointerdown", closeWhenClickingAway);
+    };
+  }, [isDrawerOpen]);
+
   const toggleAccordion = (id, forceOpen = false) => {
     setOpenIds((current) => {
       const next = new Set(current);
@@ -409,68 +477,120 @@ export default function App() {
     setAccordions((current) => removeAccordion(current, id));
   };
 
-  return (
-    <main className="container page-shell">
-      <header className="page-header">
-        <div>
-          <p className="eyebrow">Nested notes</p>
-          <h1>System Design</h1>
-          <p className="lead">
-            Build an outline with Markdown and endlessly nested accordions.
-          </p>
-        </div>
-        <div className="header-actions">
-          <span
-            className={`save-status ${status === "Save failed" ? "text-danger" : ""}`}
-            aria-live="polite">
-            {status}
-          </span>
-          <button
-            type="button"
-            className="btn btn-outline-secondary"
-            disabled={openIds.size === 0}
-            onClick={() => setOpenIds(new Set())}>
-            Collapse all
-          </button>
-        </div>
-      </header>
+  const goToAccordion = (id) => {
+    const path = findAccordionPath(accordions, id);
+    if (!path) return;
 
-      <div className="accordion root-accordion">
-        {accordions.map((accordion) => (
-          <AccordionItem
-            key={accordion.id}
-            accordion={accordion}
-            depth={0}
-            isOpen={(id) => openIds.has(id)}
-            onToggle={toggleAccordion}
-            onChange={(id, updater) =>
-              setAccordions((current) => updateAccordion(current, id, updater))
-            }
-            onDelete={deleteAccordion}
-          />
-        ))}
+    setOpenIds((current) => new Set([...current, ...path]));
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document
+          .getElementById(`accordion-${id}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  };
+
+  return (
+    <>
+      <div
+        ref={drawerRef}
+        className={`side-drawer ${isDrawerOpen ? "is-open" : ""}`}>
+        <aside
+          id="notes-drawer"
+          className="side-drawer-panel"
+          aria-label="Accordion outline">
+          <div className="side-drawer-header">
+            <p className="eyebrow">Navigation</p>
+            <h2>Outline</h2>
+          </div>
+          <nav aria-label="Notes outline">
+            {accordions.length > 0 ? (
+              <DrawerOutline accordions={accordions} onSelect={goToAccordion} />
+            ) : (
+              <p className="drawer-empty">No accordions yet.</p>
+            )}
+          </nav>
+        </aside>
+        <button
+          type="button"
+          className="side-drawer-tab"
+          aria-controls="notes-drawer"
+          aria-expanded={isDrawerOpen}
+          aria-label={isDrawerOpen ? "Close outline" : "Open outline"}
+          onClick={(event) => {
+            setIsDrawerOpen((current) => !current);
+            if (isDrawerOpen) event.currentTarget.blur();
+          }}>
+          <span aria-hidden="true">{isDrawerOpen ? "‹" : "›"}</span>
+          <span className="side-drawer-tab-label">Outline</span>
+        </button>
       </div>
 
-      {accordions.length === 0 && status !== "Loading…" && (
-        <div className="empty-page">
-          <h2>No accordions left</h2>
-          <p>Reload the starter JSON or add a new top-level accordion.</p>
-        </div>
-      )}
+      <main className="container page-shell">
+        <header className="page-header">
+          <div>
+            <p className="eyebrow">Nesty Notes</p>
+            <h1>System Design</h1>
+            <p className="lead">
+              Helpful tools are available from the left side pull tab
+            </p>
+          </div>
+          <div className="header-actions">
+            <span
+              className={`save-status ${status === "Save failed" ? "text-danger" : ""}`}
+              aria-live="polite">
+              {status}
+            </span>
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              disabled={openIds.size === 0}
+              onClick={() => setOpenIds(new Set())}>
+              Collapse all
+            </button>
+          </div>
+        </header>
 
-      <button
-        type="button"
-        className="btn btn-dark add-root"
-        onClick={() => {
-          const id = newId();
-          setAccordions((current) => [
-            ...current,
-            { id, title: "New top-level accordion", children: [] },
-          ]);
-          toggleAccordion(id, true);
-        }}>
-        + Add top-level accordion
-      </button>
-    </main>
+        <div className="accordion root-accordion">
+          {accordions.map((accordion) => (
+            <AccordionItem
+              key={accordion.id}
+              accordion={accordion}
+              depth={0}
+              isOpen={(id) => openIds.has(id)}
+              onToggle={toggleAccordion}
+              onChange={(id, updater) =>
+                setAccordions((current) =>
+                  updateAccordion(current, id, updater),
+                )
+              }
+              onDelete={deleteAccordion}
+            />
+          ))}
+        </div>
+
+        {accordions.length === 0 && status !== "Loading…" && (
+          <div className="empty-page">
+            <h2>No accordions left</h2>
+            <p>Reload the starter JSON or add a new top-level accordion.</p>
+          </div>
+        )}
+
+        <button
+          type="button"
+          className="btn btn-dark add-root"
+          onClick={() => {
+            const id = newId();
+            setAccordions((current) => [
+              ...current,
+              { id, title: "New top-level accordion", children: [] },
+            ]);
+            toggleAccordion(id, true);
+          }}>
+          + Add top-level accordion
+        </button>
+      </main>
+    </>
   );
 }
