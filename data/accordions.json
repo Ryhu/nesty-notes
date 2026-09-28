@@ -17,7 +17,7 @@
       {
         "id": "getting-started-text",
         "type": "text",
-        "content": "These describe what the system does.\n\n**For a ticketing system:**\n\nCreate tickets\n\nUpdate tickets\n\nAssign tickets\n\nSearch tickets\n\nFilter tickets\n\nComment on tickets\n\nNotify users\n\n\n**For a chat system:**\n\nSend messages\n\nReceive messages\n\nStore history\n\nShow online status\n\nDeliver notifications\n\n\n**You usually identify only the most important 3–5 functions first.**"
+        "content": "These describe what the system does.\n\nA strong framework for functional requirements in a system design interview is to think in terms of:  \n\nActors → Actions → Objects → Constraints. \n\nThat keeps you focused on what the system must do, without jumping into implementation too early.  \n```\nStep\t\tQuestion\t\t   YouTube example\nActor\t\tWho uses the system?\t   Viewer, creator\nAction\t\tWhat can they do?\t   Upload, watch, search\nObject\t        What are they acting on?   Video, channel, comment\nConstraint\tAny important rule?\t   Only owner can delete video\n```\n\nThen turn those into concrete requirements:\n- Users can upload videos.\n- Users can watch videos.\n- Users can search for videos.\n- Users can like/comment on videos.\n- Creators can delete their own videos.\n\n**For a ticketing system:**\n\nCreate tickets\n\nUpdate tickets\n\nAssign tickets\n\nSearch tickets\n\nFilter tickets\n\nComment on tickets\n\nNotify users\n\n\n**For a chat system:**\n\nSend messages\n\nReceive messages\n\nStore history\n\nShow online status\n\nDeliver notifications\n\n\n**You usually identify only the most important 3–5 functions first.**"
       }
     ]
   },
@@ -28,37 +28,7 @@
       {
         "id": "ideas-text",
         "type": "text",
-        "content": "\nThese describe how well the system needs to operate.\n\nCommon ones include:\n\nCAP Theorem\nScalability  \nAvailability  \n\nLatency  \n\nSecurity  \nDurability  \nFault Tolerance  \n\nObservability   \n\nEnvironmental Constraints.  \nCompliance.  \n\n\nThis is where important tradeoffs start appearing.\n\nFor example:\n\nFor chat messages, durability is very important because users shouldn't lose messages. For online presence, eventual consistency is probably fine.\n\n## YOU SAY:\nyou probably only need 3-4 of them, ask which ones you think are most important"
-      },
-      {
-        "id": "c4cf013d-0b33-4325-9b0e-120ef8ee8c50",
-        "type": "accordion",
-        "accordion": {
-          "id": "66ed643b-4f40-47ca-a873-3a0e72675b3f",
-          "title": "Scalability",
-          "children": [
-            {
-              "id": "e6833c4c-8037-4eb7-861b-486d181222ac",
-              "type": "text",
-              "content": "In system design, scalability means:\n**\"Can the system handle significantly more load without falling apart or requiring a complete redesign?\"**\n\nthese situations can happen when your app takes on new responsibilities or new clients, or just burst traffic events. \n\nIRL, these burst traffic events are things like, people ordering a lot more food during lunchtime vs the rest, or Ecommerce stores getting a LOT more traffic during/leading up to the holidays, or black friday selling a lot, or everyones favorite celebrity just farted on live TV and social media is going crazy and millions of events are happening on a single post within minutes.\n\nfor most cases, this is horizontal scaling, this is the P(artition) in the CAP theorum\n\nThere are usually 2 types of scaling:  \n\n**Vertial Scaling:**  \nwhere the machine that is being bogged down is just upgraded.\nThis isnt guna happen. It costs more money to upgrade a single machine, but is an option in cheaper builds/smaller builds when you just need some power now without added complexity.  \n\n**Horizontal Scaling:**  \n\nIt means adding more machines, probably fed by a load balancer or queues.\nIs probably also balanced out by adding utility, like adding a cache, database indexing.\n\nCommon answers involve load balancers, stateless servers, horizontal scaling, caching, database indexing, read replicas, partitioning/sharding, queues, and CDNs.\n\n## WHEN?\nyou mention this when you think that the amount of users or input is guna get out of hand\n\n## YOU SAY:\nIn the non-functional requirements step, you usually bring up scalability by turning it into an expected growth/load requirement, not by immediately naming technologies.\n\nA natural interview phrasing would be:\n\n**“For scalability, I’d like to understand the expected traffic and growth. Are we designing for thousands of users, millions of users, or potentially much larger scale? I’d also want to know whether the workload is mostly reads, writes, or both.”**\n\nThat sounds much more realistic than saying:\n\n**“We need Redis, sharding, and Kubernetes.”**"
-            }
-          ]
-        }
-      },
-      {
-        "id": "fdd0ba83-4d75-4507-a54f-b9feb6b6e9be",
-        "type": "accordion",
-        "accordion": {
-          "id": "e270d1de-1952-455b-a3c4-55b959fba77c",
-          "title": "Availability",
-          "children": [
-            {
-              "id": "094460ea-2ef9-4961-a55a-3fdf3db8fd1a",
-              "type": "text",
-              "content": "In system design, availability means:\n\n**How often the system is up and able to successfully serve users when they need it.**\n\n<br>\n\n### What counts as “unavailable”?\n\nIt does not necessarily mean the entire system is completely dead.\n\nA system may be considered unavailable if users cannot perform the operation they need.\n\nFor example, in an e-commerce app:\n\nHomepage loads      ✅\nProduct search works ✅\nCheckout fails       ❌\n\nThe website is technically running, but the checkout service is unavailable for that function.\n\n### Availability generally means redundancy:\n              Load Balancer\n             /             \\\n        Server A         Server B\n             \\             /\n                Database\nif server A fails, server B takes over.\n\n## WHEN? \nif a part of this service fails, is it catastrophic for your users?\n\n\n## YOU SAY:\nA natural way to bring it up is:\n\n**“For availability, are there any uptime requirements? For example, is occasional downtime acceptable, or is this a business-critical system where we'd want something like 99.99% availability?”**\n\nThen connect that requirement to your architecture later:\n\n**“Because availability is important here, I would avoid single points of failure by running multiple application instances behind a load balancer and using database replication.”**"
-            }
-          ]
-        }
+        "content": "\nThese describe how well the system needs to operate.\n\nCommon ones include:\n\nCAP Theorem\nScalability  \nAvailability  \n\nLatency  \n\nSecurity   \nDurability  \nFault Tolerance  \n\nObservability   \n\nEnvironmental Constraints.  \nCompliance.  \n\n\nThis is where important tradeoffs start appearing.\n\nFor example:\n\nFor chat messages, durability is very important because users shouldn't lose messages. For online presence, eventual consistency is probably fine.\n\n## YOU SAY:\nyou probably only need 3-4 of them, ask which ones you think are most important"
       },
       {
         "id": "7614090d-810a-495b-95de-19a2b3d995e6",
@@ -85,7 +55,127 @@
             {
               "id": "d6308543-e599-465c-83a3-ae64df5ccacb",
               "type": "text",
-              "content": "In system design, consistency means:  \n**\"How quickly and how reliably can all users or services see the same, up-to-date data after a change happens?\"**\n\nIn distributed systems, when an update happens and for some reason, your machines cant talk to each other, what do you do?\n(Consistency matters only in network partitions/down times, cuz if nothing bad happens then you're always 100% consistent)\n\n"
+              "content": "In system design, consistency means:  \n**\"How quickly and how reliably can all users or services see the same, up-to-date data after a change happens?\"**\n\nIn distributed systems, when an update happens and for some reason, your machines cant talk to each other, what do you do?\n(Consistency matters only in network partitions/down times, cuz if nothing bad happens then you're always 100% consistent)\n\nThere are a couple (there are more, these are common) types of consistency:"
+            },
+            {
+              "id": "613a9eb9-c1be-4626-b43e-a15a0854c059",
+              "type": "accordion",
+              "accordion": {
+                "id": "be14268d-a0b6-402f-9c85-e8162fa27faf",
+                "title": "Consistency - Strong Consistancy / Linearizability",
+                "children": [
+                  {
+                    "id": "100bc7fb-e58f-4c3a-b413-1fc07b9a16f1",
+                    "type": "text",
+                    "content": "When people generally say \"Strong Consistency\", they generally mean Linearizability\n\nLinearizability means:  \n**Every operation appears to happen instantly at a single point in time between when the request starts and when it finishes**  \n\nwhich then simplifies to:  \n**Even though the system is distributed across many servers, there is really just one perfectly up-to-date copy of the data.**\n\n#### How is this achieved?\nThis is achieved by having a majority/all/leader node(s) agree on the write before it happens\nLets say you do a write, with the majority pattern. You then have to send that write down to all other nodes, and only when a majority of them confirm the write, does the write actually happen on all of them. This ensures that no matter what, the data being written is known to the majority, which will keep that data fresh, and that write without majority dont make it through. \n\nlets say you have a majority write cycle. What happens when you're a disconnected node?  \nLets say you're on a desktop banking application. You can currently read your balance, $100. The desktop server then disconnects, someone does a whoopsies. Then, you make a transaction on your phone, which hits a different server than your desktop app, so you have $150. But on your unrefreshed desktop, it still shows $100 cuz it hasn't read yet. When you refresh, one of two things could happen:  \nA. since the node is disconnected, you refresh and the server tries to get a read off the leader node/majority, fails, and errors out, try again later\nB. The node is reconnected, gets the data from the leader node, and then prints out the data  \n\n#### Use Cases:  \nMost systems will use this when they need the consistency, like banking applications, or inventory, or time booking systems, or when you need data to not be wrong. \n\n#### Summary:\nMajority/quorum.  \n    ↓  \ndetermines what writes are officially committed  \n\nReplication/catch-up  \n    ↓  \na stale replica can usually sync from one authoritative source. \n"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "24893624-f2f8-413e-9bfa-72df4d88fc40",
+              "type": "accordion",
+              "accordion": {
+                "id": "32566855-9046-4760-85b9-c2c29261e9f1",
+                "title": "Consistency - Eventual Consistency",
+                "children": [
+                  {
+                    "id": "9280a58e-dc80-450e-897e-2637a379bdca",
+                    "type": "text",
+                    "content": "In system design, eventual consistency means:  \n\n**After data is updated, not every copy of that data is guaranteed to reflect the change immediately — but if no more updates happen, all copies will eventually converge to the same value**  \n\nThe acceptable amount of time this could take differs depending on content:\n\nFor example:\n```\nProfile picture       → seconds may be acceptable  \nLike counter          → seconds may be acceptable  \nAnalytics dashboard   → minutes may be acceptable  \nProduct inventory     → depends on business rules  \nBank balance          → stale data may be unacceptable  \n```\n\n#### How is this achieved?  \n\nJust set up your reads to submit whatever data it has on hand when it fails to get fresh data  \n\n\n\nEventual consistency also may appear with caches, search indexes, object storage, etc  \nPlaces where you can make a change, and then expect to wait a bit for things to update\n"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "22044d70-8f4a-4451-bcc0-2883ef20750f",
+              "type": "accordion",
+              "accordion": {
+                "id": "4b86baba-c94d-4b64-88ec-628f292a070c",
+                "title": "Consistency - Read-your-writes Consistency",
+                "children": [
+                  {
+                    "id": "da674b27-d538-44f2-a740-7dedd906522c",
+                    "type": "text",
+                    "content": "Read-your-writes consistency means:  \n\n**After you successfully write or update something, your later reads should see that update**\n\nIn essence, it's the same as Eventual Consistency, but with one big difference: When you make a change, YOU consistently see the change you made.  \nHowever, this doesn't necessarily mean that other people can see the change you made.  \n\n#### How is this achieved?  \n\nThe only difference between this and eventual consistency is that after you make your change, there is some kind of mechanism that brings you back to the same db you wrote to\n\n```\nUser\n ↓\nANY app server\n ↓\nShared information about latest write\n ↓\nCorrect database node\n```\n\nFor example, there are two servers, server A and server B, both with your name as name=\"Bob\". You make a change to server A, and then there is a network partition. When you make the update, you get the your result, name=\"Bobbert\" back, along with some kind of key, pointing at the db you hit. When you go to read again, even if you're directed to server B, you will then read from the same db you wrote to. When someone else reads, they might not read from the same db you wrote to, so they may see either \"Bob\" or \"Bobbert\"\n"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "7cf8ab52-9fe7-40d1-bb22-a2c5f86b9563",
+              "type": "accordion",
+              "accordion": {
+                "id": "c1377da4-3a26-4f85-b62d-3c1c717db8f2",
+                "title": "Consistency - Monotonic Consistency",
+                "children": [
+                  {
+                    "id": "75a2555f-8806-4713-9ff2-9e2b328de44a",
+                    "type": "text",
+                    "content": "Monotonic Consistency is split into two parts, read and write\n\n### Monotonic Reads\n\n##### Monotonic Read Consistency is:  \n**Monotonic read consistency guarantees that once a client observes a version of data, subsequent reads by that client will never return an older version.**\n\nEssentially, you can never go back:\n```\nVersion 1: status = \"pending\"\nVersion 2: status = \"processing\"\nVersion 3: status = \"complete\"\n```\nYou cant go from \"complete\" to \"processing\"  \n\nCode wise, this means that there is a mechanism that prevents you from hitting a server with \"old\" data\n\n##### Examples:\n\n**Social media feeds and profiles**  \nIf you refresh and see a new post, follower count, or profile update, the next refresh shouldn’t show an older version.  \n\n**Messaging apps**  \nOnce you’ve seen message 120 in a conversation, a later read shouldn’t show the thread only up to message 118.\n\n**Order and delivery tracking**  \nIf an order has reached Shipped, the user shouldn’t later see Processing because another replica is behind.  \n\n**E-commerce inventory**  \nOnce a customer sees that stock dropped from 5 to 2, a later refresh shouldn’t suddenly show 5 again because of replica lag.  \n\n**Notification systems**  \nIf notifications were marked as read, a later request shouldn’t make them appear unread again.  \n\n#### How is this achieved?  \n**Sticky sessions / replica affinity**  \nRoute the same user to the same replica. If that replica keeps moving forward, the user won’t see older data from a lagging replica.  \n**Version or timestamp tracking**  \nEvery response includes a version, sequence number, log position, or timestamp. The client/session remembers the highest one seen, and future reads are only served by replicas that have caught up to at least that version.  \n**Leader reads after newer observations**  \nIf no replica is sufficiently caught up, route the read to the leader/primary, which should have the newest committed state.  \n**Wait for replica catch-up**  \nA replica can delay the request until it has applied updates through the required version.   \n\n### Monotonic Writes\n\n**Monotonic write consistency guarantees that writes from a single client are processed in the same order they were issued.**\n\nEssentially, it prevents this:\n```\n\"shipped\"\nthen later\n\"processing\"\n```\n\n#### How is this achieved?  \n\nA common approach is a sequence number:\n```\nWrite 1 → seq=1 → status=\"processing\"\nWrite 2 → seq=2 → status=\"shipped\"\nWrite 3 → seq=3 → status=\"delivered\"\n```\nthe server will save the latest used sequence number for that data object  \nso a write with an lesser sequence number gets rejected\n\nIn distributed systems, you may also use:\n- per-client sequence numbers\n- timestamps or logical clocks\n- leader-based serialization\n- partitioning by user/entity ID\n- message queues where writes for the same key go to the same partition\n- Raft/Paxos log indexes in consensus-based systems\n"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "6d358a1f-2674-4a89-b5d7-312dd7a328fe",
+              "type": "accordion",
+              "accordion": {
+                "id": "1b20cc0c-f769-4415-af80-d22a5855473b",
+                "title": "Consistency - Causal Consistency",
+                "children": [
+                  {
+                    "id": "748f2a49-3fa0-4c53-be2a-460bd6bc2313",
+                    "type": "text",
+                    "content": "Causal consistency is a guarantee that:  \n**cause-and-effect relationships are observed in the right order**  \n\nessentially:   \n\n```\nCreate Post\n    ↓\nRead Post\n    ↓\nCreate Comment\n```\n\nyou cant create a comment on a post that doesnt exist, so if you make a comment, then the post you commented on must exist. \n\n\n#### How is this achieved?  \nCausal Consistency is usually done using Vector Clocks (explained below) attached to an update to track when that change was made, and then applying those changes in the correct order. \n\nSession tokens / causal context can also be used:  \n- Very practical in real systems.  \n- The client carries “what I’ve already seen” between requests.  \n- Common for guarantees like read-your-writes and monotonic reads.  "
+                  },
+                  {
+                    "id": "c1406aaf-a355-4e58-9631-4f79a43630d7",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "5202965e-3173-4001-bbb5-48379be265bb",
+                      "title": "Logical Clocks - Vector Clock/ Version Vector, Lamport Clock",
+                      "children": [
+                        {
+                          "id": "7f264839-0996-49a4-9b32-939ee9feecf8",
+                          "type": "text",
+                          "content": "Because time may not be easily synced between different machines, logical clocks are used instead, tracking changes/updates.  \nEssentially, these are just trackers of how many events happened, where.  \n\n### Lamport Clock\nThis is a very fancy name for a single int counter.  \nWhenever a server performs a local event, it increments its clock.  \nWhenever a server sends a message to another server, increment.  \n**These clocks are generally attached to events or messages, so the recieving server knows \"when\" in time this event happened**  \n\n\nThe other server can use this clock to figure out where/when it is by comparing it's version of the clock with this incoming one\n\nUsage mechanism explained below in vector clock\n\n### Vector Clock/Version Vector\nA vector clock is a logical clock used in distributed systems to track causal relationships between events more precisely than a Lamport clock.  \n**These clocks are generally attached to events or messages, so the recieving server knows \"when\" in time this event happened**  \nGenerally, every server gets it's own Lamport clock: [0,0]\n\nWhenever an event happens, something is incremented: \n```\nlocal event:\nincrement own counter\n\nsend:\nincrement own counter\nattach clock\n\nreceive:\nmerge clocks\nincrement own counter\n```\n\nSo an example with just servers A, B, C : [0,0,0], [0,0,0], [0,0,0]\n```  \nA makes a change: [1,0,0] -- [0,0,0] -- [0,0,0]\n*A goes up by 1*\nA sends to B:     [2,0,0] -- [2,0,0] -- [0,0,0]\n*A increments by 1, sends to B*\nB makes a change: [2,0,0] -- [2,1,0] -- [0,0,0]\n*B goes up by 1*\n```\n\nat this point, if C got the current version of B [2,2,0] (B goes up when sending) and an older version of A: [2,0,0]\nthen C would know that the B version[2,2,0] is newer, and relies on the older version [2,0,0] to go first.\nThis is because the newer version has higher time increments than the older version. \n\nWhat if things happen concurrently?\nA = [4,2,3]\nB = [3,2,3]\nC = [3,2,4]\n\nif B got both the A and the C, then B would know that they both happened at the same time, and more importantly, they dont touch each other, because the fields they update do not touch each other. \n\nVersion vectors are the same, but used for data instead of tracking time:\n**Vector clock = general causal-ordering mechanism. Version vector = vector-clock-style metadata used specifically for replicated data versions.**\n...its a little confusing\n\n\n\n"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "fdd0ba83-4d75-4507-a54f-b9feb6b6e9be",
+        "type": "accordion",
+        "accordion": {
+          "id": "e270d1de-1952-455b-a3c4-55b959fba77c",
+          "title": "Availability",
+          "children": [
+            {
+              "id": "094460ea-2ef9-4961-a55a-3fdf3db8fd1a",
+              "type": "text",
+              "content": "In system design, availability means:\n\n**How often the system is up and able to successfully serve users when they need it.**\n\n<br>\n\n### What counts as “unavailable”?\n\nIt does not necessarily mean the entire system is completely dead.\n\nA system may be considered unavailable if users cannot perform the operation they need.\n\nFor example, in an e-commerce app:\n\nHomepage loads      ✅\nProduct search works ✅\nCheckout fails       ❌\n\nThe website is technically running, but the checkout service is unavailable for that function.\n\n### Availability generally means redundancy:\n              Load Balancer\n             /             \\\n        Server A         Server B\n             \\             /\n                Database\nif server A fails, server B takes over.\n\n## WHEN? \nif a part of this service fails, is it catastrophic for your users?\n\n\n## YOU SAY:\nA natural way to bring it up is:\n\n**“For availability, are there any uptime requirements? For example, is occasional downtime acceptable, or is this a business-critical system where we'd want something like 99.99% availability?”**\n\nThen connect that requirement to your architecture later:\n\n**“Because availability is important here, I would avoid single points of failure by running multiple application instances behind a load balancer and using database replication.”**"
+            }
+          ]
+        }
+      },
+      {
+        "id": "c4cf013d-0b33-4325-9b0e-120ef8ee8c50",
+        "type": "accordion",
+        "accordion": {
+          "id": "66ed643b-4f40-47ca-a873-3a0e72675b3f",
+          "title": "Scalability",
+          "children": [
+            {
+              "id": "e6833c4c-8037-4eb7-861b-486d181222ac",
+              "type": "text",
+              "content": "In system design, scalability means:\n**\"Can the system handle significantly more load without falling apart or requiring a complete redesign?\"**\n\nthese situations can happen when your app takes on new responsibilities or new clients, or just burst traffic events. \n\nIRL, these burst traffic events are things like, people ordering a lot more food during lunchtime vs the rest, or Ecommerce stores getting a LOT more traffic during/leading up to the holidays, or black friday selling a lot, or everyones favorite celebrity just farted on live TV and social media is going crazy and millions of events are happening on a single post within minutes.\n\n\nThere are usually 2 types of scaling:  \n\n**Vertial Scaling:**  \nwhere the machine that is being bogged down is just upgraded.\nThis isnt guna happen. It costs more money to upgrade a single machine, but is an option in cheaper builds/smaller builds when you just need some power now without added complexity.  \n\n**Horizontal Scaling:**  \n\nIt means adding more machines, probably fed by a load balancer or queues.\nIs probably also balanced out by adding utility, like adding a cache, database indexing.\n\nCommon answers involve load balancers, stateless servers, horizontal scaling, caching, database indexing, read replicas, partitioning/sharding, queues, and CDNs.\n\n## WHEN?\nyou mention this when you think that the amount of users or input is guna get out of hand\n\n## YOU SAY:\nIn the non-functional requirements step, you usually bring up scalability by turning it into an expected growth/load requirement, not by immediately naming technologies.\n\nA natural interview phrasing would be:\n\n**“For scalability, I’d like to understand the expected traffic and growth. Are we designing for thousands of users, millions of users, or potentially much larger scale? I’d also want to know whether the workload is mostly reads, writes, or both.”**\n\nThat sounds much more realistic than saying:\n\n**“We need Redis, sharding, and Kubernetes.”**"
             }
           ]
         }
@@ -95,31 +185,108 @@
         "type": "accordion",
         "accordion": {
           "id": "2b84d2b2-0d44-4636-ba94-5e8e97ce6d94",
-          "title": "New accordion",
-          "children": []
+          "title": "Latency",
+          "children": [
+            {
+              "id": "ac4f6aa7-0e41-4d5d-8ae3-143f53d8a01e",
+              "type": "text",
+              "content": "latency is   \n**the amount of time it takes for an operation to complete, usually measured from when a request is sent until the result is received**\n\nIn interviews, you'll also hear things like p50, p95, and p99 latency.   \nMedian latency, like p50, represents what most people get.   \nTail latency, like p95 or p99, represents what 1/100, which is still a reasonably large chunk of your user base, gets  \n\nIn system design, p99 matters a lot because averages can hide bad user experiences.  \nIf your API's p99 latency is 800 ms, that means about 99% of requests finish within 800 ms, while roughly 1% take longer.  \n\nIn a system design interview, latency usually comes up when discussing questions like:  \n- How quickly should the API respond?  \n- Should we use a cache to avoid slow database queries?  \n- Should services be geographically closer to users?  \n- Can some work happen asynchronously instead of making the user wait?  \n- Are too many services being called sequentially?  \n\nTo improve latency:\n\nUse caches  \nCDNS closer to users    \nParallel work/ async work instead of sync/sequential work  \ndatabase indexing, read replicas  \nconnection pooling  \n"
+            }
+          ]
+        }
+      },
+      {
+        "id": "3ffcfa68-1701-4d70-9fb8-a2733ea54450",
+        "type": "accordion",
+        "accordion": {
+          "id": "43916d58-a202-44af-b897-a8d98ae76549",
+          "title": "Durability and Fault Tolerance",
+          "children": [
+            {
+              "id": "a67a5d11-5d2f-410b-878c-44c6e429956e",
+              "type": "text",
+              "content": "## Durability:  \n\nIn system design, durability means that once data is successfully written, it should not be lost, even if there is a crash or failure afterward.\n\nDurability is usually achieved with things like:\n- Writing to disk, not just keeping data in memory.\n- Database transaction logs / WAL so committed writes can be recovered after a crash.\n- Replication, so another machine has a copy if one server dies.\n- Backups, for larger disasters or accidental deletion.\n- Quorum writes, where multiple replicas confirm a write before success is returned.\n  \n#### Examples\nFor example, for a banking system:  \n“I’d assume transaction data needs very strong durability. Once we confirm a transfer, we should not lose it, so I’d want persisted writes, replication, and backups.”  \n\nFor something less critical, like analytics:  \n“Analytics events may tolerate some loss, so I wouldn’t necessarily optimize for the same durability guarantees as transactional data.”  \n\n#### Summary\nFor durability specifically, you want to answer three questions:  \n- What data must never be lost?  \n- What failures should it survive? Server crash? Disk failure? Region failure?  \n- What tradeoff are we willing to make? More durability can mean higher write latency and cost.  "
+            },
+            {
+              "id": "136822a3-ddd9-4368-933b-3d61211e114f",
+              "type": "text",
+              "content": "### Fault Tolerance:\nIn system design, fault tolerance means **designing a system so it can keep working even when some components fail**  \nor otherwise:   \n**\"What happens when something breaks, and how do I keep the rest of the system running?\"**. \n\nYou usually want to capture fault tolerance in terms of the failures the system should survive:\n- Instance failure: one server dies → traffic shifts to healthy instances.\n- Database replica failure: reads can move to another replica.\n- Availability-zone failure: another AZ continues serving traffic.\n- Dependency failure: perhaps degrade gracefully rather than fail the whole request.\n- Transient failures: retries/timeouts may handle them.\n\nThen clarify how fault tolerant the system actually needs to be. For example, ask:  \n“If one application server or one availability zone goes down, should the system remain fully available, or is temporary degraded functionality acceptable?”\n\nKeep in mind:\nfault tolerance has a cost and shouldn't automatically mean “survive every possible failure.”"
+            }
+          ]
+        }
+      },
+      {
+        "id": "17b100a1-9ae1-4cf5-a579-a2c40a5073b7",
+        "type": "accordion",
+        "accordion": {
+          "id": "b8f1aa86-d6ec-4bfc-94fe-dee43ef7b711",
+          "title": "Security",
+          "children": [
+            {
+              "id": "fe17e0f3-d0bd-460d-8726-400cf82a360e",
+              "type": "text",
+              "content": "In system design, security as a non-functional requirement means:  \n**The system must protect data, users, and services from unauthorized access, misuse, tampering, and data leakage.**\n\nYou want to establish what needs protection and what security guarantees matter.\n  \nA good rule is: if users log in, own data, share data, make payments, upload files, or have different roles, security is worth mentioning.\nYou can usually say something brief like:  \n**“We should also consider security: authentication, authorization, encryption in transit and at rest, and rate limiting if abuse is a concern.”**  \n\nYou can think of security in system design as a few main areas:\n- Authentication — who is the user?\n  - passwords\n  - OAuth\n  - SSO\n  - JWT/session tokens\n- Authorization — what is that user allowed to do?\n  - Role Based Access Control - RBAC\n  - resource ownership\n  - admin vs regular user permissions\n- Encryption\n  - TLS/HTTPS for data in transit\n  - encryption at rest for databases, object storage, backups\n- Secrets management\n  - API keys\n  - database passwords\n  - encryption keys\n  - don't hardcode these in application code\n- Input/security protections\n  - SQL injection prevention\n  - XSS prevention\n  - CSRF protection\n  - request validation\n- Abuse protection\n  - rate limiting\n  - throttling\n  - bot protection\n  - account lockouts\n- Auditing and monitoring\n  - login attempts\n  - permission changes\n  - sensitive operations\n  - suspicious activity"
+            }
+          ]
+        }
+      },
+      {
+        "id": "66fa8977-1e19-4b87-8785-56da0f006f88",
+        "type": "accordion",
+        "accordion": {
+          "id": "ed291715-7623-4941-aca5-bdedf391cc04",
+          "title": "Environmental Constraints and Compliance",
+          "children": [
+            {
+              "id": "d8d0167a-3b97-4f4e-9358-f82be2e58932",
+              "type": "text",
+              "content": "### Environmental Constraints\n\nIn system design, environment constraints are **the technical or organizational limits you have to design within.**  \n\nIn the non-functional requirements section, this means asking:  \n**“Are there any required technologies, platforms, regions, compliance rules, or infrastructure limitations that constrain the design?”**. \n\nHow to bring it up in an interview:  \n“Are there any environmental or technology constraints I should be aware of? For example, are we required to use a particular cloud provider, database, existing infrastructure, or deployment platform?”  \n\nOther constraints can include mobile only users, or memory constraints on machines"
+            },
+            {
+              "id": "3e3ea19a-f3bf-4cef-9b95-cf4c842d0650",
+              "type": "text",
+              "content": "### Compliance\n\nIn system design, compliance means **the system has to follow specific laws, regulations, industry standards, or company policies.**  \n\nask:  \n**“Are there any regulatory or compliance requirements that affect how we store, process, access, or retain data?”**\n\nCommon examples include:\n- GDPR for personal data and privacy\n- HIPAA for healthcare information\n- PCI DSS for payment-card data\n- SOC 2 for operational/security controls\n- Data residency requirements, such as keeping EU user data in the EU\n- Retention or deletion requirements\n- Audit-log requirements"
+            }
+          ]
         }
       }
     ]
   },
   {
     "id": "notes",
-    "title": "Notes",
+    "title": "STEP 4: Core Entities",
     "children": [
       {
         "id": "notes-text",
         "type": "text",
-        "content": "Markdown supports `inline code`, links, lists, headings, and more."
+        "content": "Next you should take a moment to identify and list the core entities of your system.  \nThis helps you to define terms, understand the data central to your design, and gives you a foundation to build on. These are the core entities that your API will exchange and that your system will persist in a Data Model.  \nIn the actual interview, this is as simple as jotting down a bulleted list and explaining this is your first draft to the interviewer.\n\nStarting with a small list, you can quickly iterate and add to it as you go.\n\nFor a Twitter example, our core entities are rather simple:  \nUser  \nTweet  \nFollow  \n\nA couple useful questions to ask yourself to help identify core entities:\nWho are the actors in the system? Are they overlapping?\nWhat are the nouns or resources necessary to satisfy the functional requirements?"
       }
     ]
   },
   {
     "id": "resources",
-    "title": "Resources",
+    "title": "STEP 5: API or System Interface",
     "children": [
       {
         "id": "resources-text",
         "type": "text",
-        "content": "Add your useful links and reference material here."
+        "content": "For the most part, we are going to use the REST API protocol here, but some other possible options are:  \n\nGraphQL: Allows clients to specify exactly what data they want to receive, avoiding over-fetching and under-fetching. Choose this when you have diverse clients with different data needs.  \n\nRPC (Remote Procedure Call): Action-oriented protocol (like gRPC) that's faster than REST for service-to-service communication. Use for internal APIs when performance is critical.  \n\nAlso, use this time to define other requirements that you may find as you drill deeper into the implementation, as you go deeper into what the code will actually look like, you'll often find things that you've missed.\n\n#### General REST Framework: \nAction → Resource → Endpoint  \nThen: \nRequest → Response → Errors  \n\nStart with CRUD for all Core Entities, deciding which needs to be kept or removed.\n```\nPOST   /messages\nGET    /messages/{id}\nGET    /conversations/{id}/messages\nDELETE /messages/{id}\n```\n\nThen, move onto functional requirements that are not part of CRUD\nExamples:\n```\nPOST /orders/{id}/cancel\nPOST /videos/{id}/like\nPOST /users/{id}/follow\nPOST /payments/{id}/refund\n ```\n\nFor an extra layer of double-checking, use the Request → Response → Errors  cycle to go through constraints and business logic\n\n### Think about the \"hard\" API concerns:\nFor each important endpoint, ask:\nCould this be slow, large, repeated, concurrent, or security-sensitive?\n\nThat leads you to the most important API design concerns.\n\n```\nFor list endpoints:\npagination\nfiltering\nsorting\n\nFor create endpoints:\nidempotency\n\nFor security:\nauthentication\nauthorization\n\nFor large objects:\nDon't necessarily upload through your application server.\n```\n"
+      }
+    ]
+  },
+  {
+    "id": "259a0276-bb6d-47e4-8a78-72dd522eee31",
+    "title": "New top-level accordion",
+    "children": []
+  },
+  {
+    "id": "b34539fe-c89f-494c-96dc-d106a8ed84c7",
+    "title": "TODOS: ",
+    "children": [
+      {
+        "id": "7a4e6cb9-b668-46b4-919d-535f4d551d4f",
+        "type": "text",
+        "content": "explain rpc and graphql in step 5\n\nadd a glossary\n\nredo steps 1 and 2\n\nadd a mechanism to move accordians up an down"
       }
     ]
   }
