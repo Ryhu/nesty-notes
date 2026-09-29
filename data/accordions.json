@@ -12,7 +12,7 @@
   },
   {
     "id": "getting-started",
-    "title": "STEP 2: Functional requirements",
+    "title": "STEP 2: Functional requirements  (~2 minutes)",
     "children": [
       {
         "id": "getting-started-text",
@@ -23,7 +23,7 @@
   },
   {
     "id": "ideas",
-    "title": "STEP 3: Non-Functional Requirements",
+    "title": "STEP 3: Non-Functional Requirements (~3 minutes)",
     "children": [
       {
         "id": "ideas-text",
@@ -254,7 +254,7 @@
   },
   {
     "id": "notes",
-    "title": "STEP 4: Core Entities",
+    "title": "STEP 4: Core Entities  (~2 minutes)",
     "children": [
       {
         "id": "notes-text",
@@ -265,7 +265,7 @@
   },
   {
     "id": "resources",
-    "title": "STEP 5: API or System Interface",
+    "title": "STEP 5: API or System Interface (~5 minutes)",
     "children": [
       {
         "id": "resources-text",
@@ -276,7 +276,222 @@
   },
   {
     "id": "259a0276-bb6d-47e4-8a78-72dd522eee31",
-    "title": "New top-level accordion",
+    "title": "Step 6: High Level Design  (~10-15 minutes)",
+    "children": [
+      {
+        "id": "37a4bacb-b6cb-41a4-99c0-508f79c680a8",
+        "type": "accordion",
+        "accordion": {
+          "id": "2ad77e9a-94a2-4770-a7f3-6bd7aff07a9a",
+          "title": "System Components",
+          "children": [
+            {
+              "id": "3b856bcb-5c03-43c8-8359-9811a437c1b1",
+              "type": "accordion",
+              "accordion": {
+                "id": "d46248cd-1a43-4b24-b46e-3e81f10394b5",
+                "title": "Clients / Entry Points",
+                "children": []
+              }
+            },
+            {
+              "id": "dcf316d3-2f9d-4251-970f-0bbe45d4de81",
+              "type": "accordion",
+              "accordion": {
+                "id": "96d9e336-da9d-430a-8c19-6722b83dea4f",
+                "title": "Traffic & Routing",
+                "children": [
+                  {
+                    "id": "b4793279-e92f-4835-bcb5-161f021ec585",
+                    "type": "text",
+                    "content": "Write **Markdown** here."
+                  },
+                  {
+                    "id": "67b8443a-3327-4c60-acc8-c3cecdcb7f04",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "4b7e4a05-c903-4f8b-ac58-96fcec6fa01f",
+                      "title": "DNS, CDN",
+                      "children": []
+                    }
+                  },
+                  {
+                    "id": "e3c600ba-91c4-4f4a-a735-e81801e9eef9",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "7b8e9e93-206a-4122-83fc-9b6a37c8c8ae",
+                      "title": "API Gateway",
+                      "children": []
+                    }
+                  },
+                  {
+                    "id": "9bece922-4329-4e36-86b0-b812bb37a6dd",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "a68442e9-3536-49fb-8ce1-7749dc31db99",
+                      "title": "Load Balancer",
+                      "children": []
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "c0340698-019e-4424-a4ee-ebe9c3e317c5",
+              "type": "accordion",
+              "accordion": {
+                "id": "d5290d22-4a5e-45a1-8341-cfc3582ebe3c",
+                "title": "Application / Compute",
+                "children": [
+                  {
+                    "id": "288a3e28-d78b-4974-bd41-fc758164110c",
+                    "type": "text",
+                    "content": "Write **Markdown** here."
+                  },
+                  {
+                    "id": "1d206c1d-6d74-4d63-8033-6085f44c99b7",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "9834f48e-7fed-4c09-b274-7dd242662916",
+                      "title": "Servers",
+                      "children": []
+                    }
+                  },
+                  {
+                    "id": "c3f40029-6fb3-4b5b-8564-d9b021b664dd",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "d9dd9ec2-e87e-44e4-abb4-aef82f3228dc",
+                      "title": "Microservices",
+                      "children": []
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "96299962-b749-4a1e-8d66-0626cf65b0a1",
+              "type": "accordion",
+              "accordion": {
+                "id": "7f616356-791b-4997-9e17-078213e6285b",
+                "title": "Databases",
+                "children": [
+                  {
+                    "id": "54c6b844-b7e4-4ae4-9b3e-a6e9b747567f",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "ebdf5ac4-ec8d-4c85-881c-c2d03acdca37",
+                      "title": "Relational (SQL)",
+                      "children": [
+                        {
+                          "id": "556e8c13-9c5b-4ce9-a3d9-491bbd086545",
+                          "type": "text",
+                          "content": "Write **Markdown** here."
+                        },
+                        {
+                          "id": "36470eeb-209b-43b5-a483-d7728b660130",
+                          "type": "accordion",
+                          "accordion": {
+                            "id": "d9becdb3-d1d4-42d6-b104-6d9acff4a568",
+                            "title": "Postgres",
+                            "children": []
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "c62916ee-77e5-4a64-94b9-6970cdb8ec1d",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "e3a8c12c-4c4e-43d1-bae9-b320ba1109b6",
+                      "title": "Key-value",
+                      "children": []
+                    }
+                  },
+                  {
+                    "id": "af194b7c-0db3-494c-b541-414ad59cfa73",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "4a7b5e75-dc59-40ae-8822-d030b9eb181b",
+                      "title": "Document",
+                      "children": []
+                    }
+                  },
+                  {
+                    "id": "2f7d04db-9520-4a91-8fcd-223154aee6f4",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "55d15300-87fb-4dc1-bffb-436ba80c6fe5",
+                      "title": "Wide-column",
+                      "children": []
+                    }
+                  },
+                  {
+                    "id": "e90c41b1-9689-44fe-98ab-9eee4269f71a",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "b16dfa26-5889-47e9-a1df-33f0e57dfc83",
+                      "title": "Graph",
+                      "children": []
+                    }
+                  },
+                  {
+                    "id": "2939b95f-ac6b-498a-a9da-acf0bcea6067",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "9d8a10cd-9a04-4763-9039-c88115f28326",
+                      "title": "Time Series",
+                      "children": []
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "0d55617c-317c-4fa6-b05b-d301e39d95b7",
+              "type": "accordion",
+              "accordion": {
+                "id": "5eb433ab-2846-496f-9661-545b3557df10",
+                "title": "Caches",
+                "children": []
+              }
+            },
+            {
+              "id": "a6af0829-d753-4cf2-a2f7-ef84995c8a67",
+              "type": "accordion",
+              "accordion": {
+                "id": "141ed057-43c5-44a1-89c3-4e5a656ad765",
+                "title": "Async / Messaging",
+                "children": []
+              }
+            },
+            {
+              "id": "9c8d635a-d9d7-4d2f-812e-e56dd41b6325",
+              "type": "accordion",
+              "accordion": {
+                "id": "e02dd1ae-ee96-4aea-972c-305b291f7adb",
+                "title": "Real-Time Communication",
+                "children": []
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "ad366947-a6ce-4ba3-a495-bad248a7d04a",
+        "type": "accordion",
+        "accordion": {
+          "id": "856bed0d-219a-40bd-9be2-75fea43a226d",
+          "title": "Design Patterns",
+          "children": []
+        }
+      }
+    ]
+  },
+  {
+    "id": "314a9a39-c750-4745-81c9-959cc6792187",
+    "title": "Step 7: Deep Dives (~10 minutes)",
     "children": []
   },
   {
@@ -286,7 +501,7 @@
       {
         "id": "7a4e6cb9-b668-46b4-919d-535f4d551d4f",
         "type": "text",
-        "content": "explain rpc and graphql in step 5\n\nadd a glossary\n\nredo steps 1 and 2\n\nadd a mechanism to move accordians up an down"
+        "content": "explain rpc and graphql in step 5\n\nadd a glossary\n\nredo steps 1 and 2"
       }
     ]
   }
