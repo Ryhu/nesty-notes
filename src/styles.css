@@ -253,6 +253,10 @@ textarea {
   flex: 0 0 auto;
 }
 
+.header-move-controls {
+  flex: 0 0 auto;
+}
+
 .accordion-chevron {
   position: relative;
   flex: 0 0 1.25rem;
@@ -446,7 +450,7 @@ textarea {
     flex-direction: column;
   }
 
-  .btn-group {
+  .add-control .btn-group {
     display: grid;
   }
 }

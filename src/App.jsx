@@ -48,6 +48,81 @@ function removeAccordion(items, targetId) {
     }));
 }
 
+function swapItems(items, fromIndex, toIndex) {
+  const next = [...items];
+  [next[fromIndex], next[toIndex]] = [next[toIndex], next[fromIndex]];
+  return next;
+}
+
+function moveAccordionInTree(items, targetId, direction) {
+  const rootIndex = items.findIndex((item) => item.id === targetId);
+
+  if (rootIndex !== -1) {
+    const destination = rootIndex + direction;
+    return {
+      items:
+        destination >= 0 && destination < items.length
+          ? swapItems(items, rootIndex, destination)
+          : items,
+      found: true,
+    };
+  }
+
+  for (let itemIndex = 0; itemIndex < items.length; itemIndex += 1) {
+    const item = items[itemIndex];
+    const childIndex = item.children.findIndex(
+      (child) =>
+        child.type === "accordion" && child.accordion.id === targetId,
+    );
+
+    if (childIndex !== -1) {
+      const destination = childIndex + direction;
+      if (destination < 0 || destination >= item.children.length) {
+        return { items, found: true };
+      }
+
+      const nextItems = [...items];
+      nextItems[itemIndex] = {
+        ...item,
+        children: swapItems(item.children, childIndex, destination),
+      };
+      return { items: nextItems, found: true };
+    }
+
+    for (
+      let childIndexToSearch = 0;
+      childIndexToSearch < item.children.length;
+      childIndexToSearch += 1
+    ) {
+      const child = item.children[childIndexToSearch];
+      if (child.type !== "accordion") continue;
+
+      const result = moveAccordionInTree(
+        [child.accordion],
+        targetId,
+        direction,
+      );
+      if (!result.found) continue;
+      if (result.items[0] === child.accordion) return { items, found: true };
+
+      const nextChildren = [...item.children];
+      nextChildren[childIndexToSearch] = {
+        ...child,
+        accordion: result.items[0],
+      };
+      const nextItems = [...items];
+      nextItems[itemIndex] = { ...item, children: nextChildren };
+      return { items: nextItems, found: true };
+    }
+  }
+
+  return { items, found: false };
+}
+
+function moveAccordion(items, targetId, direction) {
+  return moveAccordionInTree(items, targetId, direction).items;
+}
+
 function collectAccordionIds(items, ids = new Set()) {
   items.forEach((item) => {
     ids.add(item.id);
@@ -105,6 +180,7 @@ function AccordionItem({
   onToggle,
   onChange,
   onDelete,
+  onMove,
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
@@ -205,6 +281,25 @@ function AccordionItem({
               {accordion.title || "Untitled accordion"}
             </span>
           </button>
+          {isEditing && (
+            <div
+              className="btn-group btn-group-sm header-move-controls"
+              role="group"
+              aria-label={`Move ${accordion.title || "accordion"}`}>
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => onMove(accordion.id, -1)}>
+                Up
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => onMove(accordion.id, 1)}>
+                Down
+              </button>
+            </div>
+          )}
           <button
             type="button"
             className={`btn btn-sm header-edit ${
@@ -296,6 +391,7 @@ function AccordionItem({
                         onToggle={onToggle}
                         onChange={onChange}
                         onDelete={onDelete}
+                        onMove={onMove}
                       />
                     </div>
                   </div>
@@ -477,6 +573,10 @@ export default function App() {
     setAccordions((current) => removeAccordion(current, id));
   };
 
+  const reorderAccordion = (id, direction) => {
+    setAccordions((current) => moveAccordion(current, id, direction));
+  };
+
   const goToAccordion = (id) => {
     const path = findAccordionPath(accordions, id);
     if (!path) return;
@@ -566,6 +666,7 @@ export default function App() {
                 )
               }
               onDelete={deleteAccordion}
+              onMove={reorderAccordion}
             />
           ))}
         </div>
