@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/accordions.js": {
+      "includeFiles": "data/accordions.json"
+    }
+  }
+}
