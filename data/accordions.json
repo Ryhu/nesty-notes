@@ -291,7 +291,13 @@
               "accordion": {
                 "id": "d46248cd-1a43-4b24-b46e-3e81f10394b5",
                 "title": "Clients / Entry Points",
-                "children": []
+                "children": [
+                  {
+                    "id": "578326fd-0667-4705-b232-f873dfa21bd0",
+                    "type": "text",
+                    "content": "This part is mostly just putting a square on the board and saying \"client\".  \nThis will cover everything from desktop apps, to mobile apps, to everything else.\nYou probably wont need anything else other than this. \n\nHowever, it is important to understand where the clients are coming from, mobile has it's data restrictions, maybe it's coming from a certain company's data restricted ipad, that will impact design further down the line."
+                  }
+                ]
               }
             },
             {
@@ -312,7 +318,13 @@
                     "accordion": {
                       "id": "4b7e4a05-c903-4f8b-ac58-96fcec6fa01f",
                       "title": "DNS, CDN",
-                      "children": []
+                      "children": [
+                        {
+                          "id": "aea45dcf-caa8-4868-b279-116aa648846d",
+                          "type": "text",
+                          "content": "### DNS: Domain Name Service\n\nUsually not brought up in terms of system design interviews, the DNS answers: **“Where should this request go?”**  \nIts job is to translate a human-readable domain name into the address of the system that should handle the request.  \nFor example:  \n```\nwww.example.com\n      ↓\nDNS lookup\n      ↓\n203.0.113.10\n```\n\n### CDN: Content Delivery Network\n\nA CDN caches content at servers geographically closer to users.\n\nThese are generally going to be used whenever you have a user base that's distributed across a larger area, lets say globally or even across the US. Maybe a CDN for the east coast, and one for the west, or distributed across different countries if global.\n\nUsually inserted into the conversation when you're talking about speeding up network calls, doesn't need to be in draft 1 or 2 unless speed is a key talking point\n\nFor example, instead of every user downloading an image from your main server in Virginia:\n```\nUser in NYC\n   |\n   v\nOrigin Server in Virginia\n```\n\na CDN may serve it from a nearby edge location:\n```\nUser in NYC\n   |\n   v\nCDN Edge in NYC\n```\n\nTypical CDN content includes:\n- images\n- videos\n- JavaScript\n- CSS\n- static HTML\n- downloadable files\n- sometimes cached API responses\n\n\n"
+                        }
+                      ]
                     }
                   },
                   {
@@ -321,7 +333,13 @@
                     "accordion": {
                       "id": "7b8e9e93-206a-4122-83fc-9b6a37c8c8ae",
                       "title": "API Gateway",
-                      "children": []
+                      "children": [
+                        {
+                          "id": "a197e38d-2231-4780-9eb4-586b2f34cb5f",
+                          "type": "text",
+                          "content": "An API gateway is **the main entry point between clients and your backend services**  \n\n**API gateways are pretty generally used during interviews, just route all client traffic to the gateway, and it also covers a lot of security concerns like rate limiting and auth**\n\nInstead of the client calling many services directly:  \n```\nClient\n  ├──> User Service\n  ├──> Order Service\n  ├──> Payment Service\n  └──> Search Service\n```\n\nthe client calls one gateway:\n```\nClient\n   ↓\nAPI Gateway\n   ├──> User Service\n   ├──> Order Service\n   ├──> Payment Service\n   └──> Search Service\n```\n\nIn system design, the API gateway commonly handles cross-cutting concerns such as:\n- request routing\n- authentication  - (security)\n- authorization checks  - (security)\n- rate limiting  - (security)\n- request validation  - (security)\n- logging and metrics\n- TLS termination\n- API versioning\n- sometimes response aggregation\n"
+                        }
+                      ]
                     }
                   },
                   {
@@ -374,8 +392,13 @@
               "type": "accordion",
               "accordion": {
                 "id": "7f616356-791b-4997-9e17-078213e6285b",
-                "title": "Databases",
+                "title": "Databases - AI filled",
                 "children": [
+                  {
+                    "id": "3bee963e-778f-43f8-bc49-f11694c5ed03",
+                    "type": "text",
+                    "content": "# Database Categories Overview\n\nA database should be chosen based on the system's **access patterns, consistency requirements, scale, relationships, query needs, and operational constraints**.\n\nA useful interview breakdown is:\n\n- **Relational (SQL):** structured transactional data and relationships.\n- **Key-value:** extremely fast lookups by known key.\n- **Document:** flexible JSON-like application records.\n- **Wide-column:** massive distributed write-heavy workloads.\n- **Graph:** relationship-heavy and multi-hop queries.\n- **Time series:** timestamped measurements and time-range analytics.\n\nIn real systems, it is common to use more than one storage technology. For example, PostgreSQL may be the source of truth while Redis is used for caching and Elasticsearch is used for search."
+                  },
                   {
                     "id": "54c6b844-b7e4-4ae4-9b3e-a6e9b747567f",
                     "type": "accordion",
@@ -386,15 +409,36 @@
                         {
                           "id": "556e8c13-9c5b-4ce9-a3d9-491bbd086545",
                           "type": "text",
-                          "content": "Write **Markdown** here."
+                          "content": "## Relational (SQL)\n\n**What it is:** A relational database stores data in structured tables made of rows and columns. Tables can be connected with relationships such as foreign keys.\n\n**What it does:** It provides structured querying with SQL, supports joins across related data, enforces schemas and constraints, and usually provides strong transaction guarantees through ACID semantics.\n\n**Why you would use it:**\n- Your data has clear relationships.\n- You need transactions and strong consistency.\n- You frequently join data across entities.\n- Data integrity and constraints matter.\n- Your access patterns are not limited to a single known key.\n\n**Common use cases:** Banking, ecommerce orders, user/account systems, inventory, billing, SaaS applications, and most transactional business systems.\n\n**Tradeoffs:** Relational databases are extremely flexible and reliable, but horizontal scaling and very high write throughput can require more planning than some distributed NoSQL systems.\n\n### Most common use cases\n- Core transactional application data.\n- User accounts, permissions, organizations, and subscriptions.\n- Orders, payments, invoices, and inventory.\n- Business applications with many related entities.\n- Systems that need reporting or ad hoc queries across multiple tables.\n\n### Why use this instead of alternative categories?\nChoose a relational database when **correctness, relationships, and flexible querying** matter more than extreme horizontal write scale. Compared with key-value stores, SQL gives you joins and richer queries. Compared with document databases, it gives stronger schema enforcement and relational integrity. Compared with wide-column databases, it is easier to query flexibly. Compared with graph databases, it is usually simpler for ordinary business relationships. For many general-purpose applications, SQL is the safest default unless a specific workload strongly favors another model."
                         },
                         {
-                          "id": "36470eeb-209b-43b5-a483-d7728b660130",
+                          "id": "33d0eaa9-21de-4c94-b9fb-90d2212a9042",
                           "type": "accordion",
                           "accordion": {
-                            "id": "d9becdb3-d1d4-42d6-b104-6d9acff4a568",
-                            "title": "Postgres",
-                            "children": []
+                            "id": "671a6a16-9755-4fe8-9ca4-d39387f292e9",
+                            "title": "PostgreSQL",
+                            "children": [
+                              {
+                                "id": "98237950-09b4-4126-9c56-70591b591d8f",
+                                "type": "text",
+                                "content": "## PostgreSQL\n\n**What it does:** PostgreSQL is a general-purpose open-source relational database with strong SQL support, ACID transactions, rich indexing, JSON support, extensions, and advanced querying.\n\n**Why you would use it:** It is a strong default for transactional applications that need correctness, joins, constraints, flexible querying, and room to grow.\n\n**Pros**\n- Excellent SQL and transaction support.\n- Strong data integrity with constraints and foreign keys.\n- Powerful indexing and query planner.\n- Supports JSONB, full-text search, geospatial extensions, and many advanced data types.\n- Mature ecosystem and tooling.\n\n**Cons**\n- Horizontal write scaling is more complex than in distributed NoSQL systems.\n- Operational tuning can become important at very large scale.\n- Cross-region active-active architectures require additional design.\n\n### Most common use cases\n- SaaS backends and business applications.\n- Ecommerce orders, payments, and inventory.\n- User/account systems.\n- Financial and transactional systems.\n- APIs that need relational data plus JSON.\n- Applications requiring complex queries and reporting.\n\n### Why use PostgreSQL instead of other relational databases?\nChoose PostgreSQL when you want a **feature-rich general-purpose SQL database** with strong standards support, sophisticated queries, JSONB, extensions, and advanced indexing. Compared with MySQL, PostgreSQL is often preferred when you need more advanced SQL features, complex data types, or extensibility. It is a strong default when you are unsure which relational database to choose."
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "id": "96cd0cfd-2619-4cb2-8887-4fc5c876946b",
+                          "type": "accordion",
+                          "accordion": {
+                            "id": "974ff3b9-17d7-40c0-aa9a-d65788a975a0",
+                            "title": "MySQL",
+                            "children": [
+                              {
+                                "id": "b4dbe25d-6b5a-40ac-bbc1-eb31af1fd734",
+                                "type": "text",
+                                "content": "## MySQL\n\n**What it does:** MySQL is a widely used relational database for transactional web applications.\n\n**Why you would use it:** It is a practical choice when you need standard relational modeling, ACID transactions, strong ecosystem support, and broad hosting compatibility.\n\n**Pros**\n- Mature and widely supported.\n- Strong performance for common web workloads.\n- Large ecosystem of tools and managed offerings.\n- Familiar SQL model.\n\n**Cons**\n- Some advanced SQL and extension capabilities are less extensive than PostgreSQL.\n- Horizontal write scaling still requires sharding or specialized architecture.\n- Behavior and feature support can differ by storage engine and version.\n\n### Most common use cases\n- Web applications and CMS platforms.\n- Ecommerce sites.\n- Read-heavy web workloads.\n- Traditional LAMP-style applications.\n- Applications running on hosting platforms with broad MySQL support.\n\n### Why use MySQL instead of other relational databases?\nChoose MySQL when you value **simplicity, widespread operational experience, broad hosting support, and strong performance for common web workloads**. Compared with PostgreSQL, MySQL can be attractive when your team already knows it well, your queries are relatively straightforward, or your infrastructure ecosystem is built around MySQL-compatible tooling."
+                              }
+                            ]
                           }
                         }
                       ]
@@ -406,7 +450,43 @@
                     "accordion": {
                       "id": "e3a8c12c-4c4e-43d1-bae9-b320ba1109b6",
                       "title": "Key-value",
-                      "children": []
+                      "children": [
+                        {
+                          "id": "eb64411b-bee3-42f4-b4cc-0a0e6af96b86",
+                          "type": "text",
+                          "content": "## Key-value\n\n**What it is:** A key-value database stores data as a mapping from a unique key to a value.\n\n**What it does:** It optimizes for extremely fast lookups when the application already knows the key. The value may be a string, JSON blob, binary object, counter, or another structure depending on the database.\n\n**Why you would use it:**\n- You need very fast reads and writes by key.\n- Your access pattern is simple and predictable.\n- You need caching, sessions, counters, rate limits, or ephemeral state.\n- You want easy horizontal partitioning.\n\n**Common use cases:** Caching, session storage, shopping carts, feature flags, leaderboards, rate limiting, and high-scale metadata lookups.\n\n**Tradeoffs:** Key-value stores are simple and fast, but they are weaker for complex querying, joins, ad hoc filtering, and relationship-heavy data.\n\n### Most common use cases\n- Application and database caching.\n- User sessions and authentication state.\n- Rate limiting and request counters.\n- Shopping carts and temporary workflow state.\n- Feature flags and configuration values.\n- Leaderboards, counters, and frequently accessed metadata.\n\n### Why use this instead of alternative categories?\nChoose a key-value store when your dominant operation is **“given this key, get or update this value very quickly.”** It is simpler and often faster than SQL or document databases for direct lookups. It is easier to partition than relationship-heavy stores, and it avoids paying for query capabilities you do not need. Do not choose it when you need joins, complex filtering, or many access paths over the same data."
+                        },
+                        {
+                          "id": "717a993c-7b03-4646-827e-1081d69b62f3",
+                          "type": "accordion",
+                          "accordion": {
+                            "id": "590181a6-31ed-452e-a536-571f0c32a765",
+                            "title": "Redis",
+                            "children": [
+                              {
+                                "id": "2b021057-1a29-4b3b-8ab6-1ea8758eb421",
+                                "type": "text",
+                                "content": "## Redis\n\n**What it does:** Redis is an in-memory data store supporting strings, hashes, lists, sets, sorted sets, streams, counters, and expiration.\n\n**Why you would use it:** Use Redis when latency needs to be extremely low and the workload involves caching, sessions, counters, rate limiting, queues, or ephemeral application state.\n\n**Pros**\n- Very low latency.\n- Rich in-memory data structures.\n- TTL support is excellent for caches and sessions.\n- Useful for counters, locks, rate limiting, leaderboards, and pub/sub.\n\n**Cons**\n- Memory is more expensive than disk-based storage.\n- It is usually not the primary source of truth for complex durable business data.\n- Persistence and replication choices require careful configuration.\n\n### Most common use cases\n- Cache for database queries or API responses.\n- Session storage.\n- Rate limiting.\n- Distributed counters.\n- Leaderboards.\n- Short-lived queues and pub/sub.\n- Temporary coordination state and locks.\n\n### Why use Redis instead of other key-value databases?\nChoose Redis when you need **extremely low latency plus rich in-memory data structures**. Compared with DynamoDB, Redis is usually better for caching, counters, sorted sets, ephemeral data, and sub-millisecond access. Redis is less attractive when you need a fully managed, durable, massively distributed primary database with minimal operational work."
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "id": "72443672-bc7b-46ae-ad97-9b03f0fcab79",
+                          "type": "accordion",
+                          "accordion": {
+                            "id": "05f008e5-69b1-4db6-86bb-f99a31256f5b",
+                            "title": "Amazon DynamoDB",
+                            "children": [
+                              {
+                                "id": "a4e6dc5e-2d6e-451c-a654-39f7f712d121",
+                                "type": "text",
+                                "content": "## Amazon DynamoDB\n\n**What it does:** DynamoDB is a managed distributed key-value and document database designed for predictable low-latency access at very large scale.\n\n**Why you would use it:** It is attractive when you need serverless operations, automatic scaling, high availability, and access patterns that can be modeled cleanly around partition and sort keys.\n\n**Pros**\n- Fully managed.\n- Scales horizontally with little operational work.\n- Very low-latency key-based access.\n- Built-in replication, TTL, streams, and global-table options.\n\n**Cons**\n- Data modeling is highly dependent on access patterns.\n- Joins are not supported.\n- Poor key design can create hot partitions.\n- Costs can become significant with inefficient access patterns.\n\n### Most common use cases\n- Serverless applications.\n- User preference and profile lookups.\n- Shopping carts.\n- Session or device metadata.\n- High-scale event metadata.\n- APIs with predictable key-based access patterns.\n- Globally distributed applications using AWS.\n\n### Why use DynamoDB instead of other key-value databases?\nChoose DynamoDB when you want a **fully managed, durable, horizontally scalable key-value/document store** with little infrastructure management. Compared with Redis, it is better suited as a durable primary store and for very large managed workloads. Compared with self-managed systems, it reduces operational burden, especially for teams already committed to AWS."
+                              }
+                            ]
+                          }
+                        }
+                      ]
                     }
                   },
                   {
@@ -415,7 +495,43 @@
                     "accordion": {
                       "id": "4a7b5e75-dc59-40ae-8822-d030b9eb181b",
                       "title": "Document",
-                      "children": []
+                      "children": [
+                        {
+                          "id": "cc580978-2189-4142-bed1-b5f4842ecee7",
+                          "type": "text",
+                          "content": "## Document\n\n**What it is:** A document database stores records as self-contained documents, commonly JSON-like objects.\n\n**What it does:** It allows flexible schemas where different documents can have different fields, while still supporting indexing and querying inside document fields.\n\n**Why you would use it:**\n- Your objects naturally map to JSON documents.\n- The schema changes frequently.\n- You want to store nested data together.\n- You usually retrieve an entire aggregate at once.\n- You want more query flexibility than a basic key-value store.\n\n**Common use cases:** Content management, product catalogs, user profiles, event metadata, configuration, and applications with rapidly evolving schemas.\n\n**Tradeoffs:** Document databases make flexible application development easy, but complex cross-document joins and strong relational integrity are usually less natural than in SQL databases.\n\n### Most common use cases\n- Product catalogs with varying attributes.\n- Content management systems.\n- User profiles and preferences.\n- JSON-heavy APIs and backend-for-frontend data.\n- Configuration documents.\n- Applications whose schema changes frequently.\n\n### Why use this instead of alternative categories?\nChoose a document database when your application naturally works with **self-contained JSON-like objects** and the schema evolves often. Compared with SQL, it reduces friction when records have different shapes or nested structures. Compared with key-value stores, it gives you richer indexing and queries inside documents. Compared with wide-column stores, it is usually easier for general application development. Avoid it when the system depends heavily on joins, strict relational constraints, or many cross-document transactions."
+                        },
+                        {
+                          "id": "5af49ccd-1685-490b-b993-170e424215f8",
+                          "type": "accordion",
+                          "accordion": {
+                            "id": "6004be96-9d9b-4114-a87b-e7cf98737bb4",
+                            "title": "MongoDB",
+                            "children": [
+                              {
+                                "id": "56235be8-87f4-4a50-8791-fa63dc87e559",
+                                "type": "text",
+                                "content": "## MongoDB\n\n**What it does:** MongoDB stores BSON documents in collections and supports nested structures, secondary indexes, aggregation pipelines, replication, and sharding.\n\n**Why you would use it:** Use MongoDB when application objects map naturally to documents and the schema needs to evolve quickly without giving up useful querying and indexing.\n\n**Pros**\n- Flexible document schema.\n- Natural fit for JSON-oriented applications.\n- Rich indexing and aggregation.\n- Built-in replication and sharding.\n- Good developer ergonomics.\n\n**Cons**\n- Joins and relationship-heavy models are less natural than in SQL.\n- Denormalization can duplicate data.\n- Flexible schemas can become inconsistent without application discipline.\n- Cross-document transactional designs can become more complex.\n\n### Most common use cases\n- Product catalogs.\n- Content management.\n- User profiles.\n- Event metadata.\n- Rapidly evolving application schemas.\n- Applications where nested JSON maps closely to domain objects.\n\n### Why use MongoDB instead of other document databases?\nChoose MongoDB when you want a **mature document database with a large ecosystem, rich indexing, aggregation, and widespread developer familiarity**. Compared with Couchbase, MongoDB is often selected for its larger ecosystem, general-purpose document modeling, and tooling. It is a common choice when flexibility and developer productivity matter more than SQL-style relational integrity."
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "id": "4753e9dc-083d-428f-85ca-11c5e28e6538",
+                          "type": "accordion",
+                          "accordion": {
+                            "id": "57a7fd10-3d5c-4b29-80c8-06b47fd65c31",
+                            "title": "Couchbase",
+                            "children": [
+                              {
+                                "id": "94fd6d32-143f-40c7-a1b3-ec797dab9afa",
+                                "type": "text",
+                                "content": "## Couchbase\n\n**What it does:** Couchbase is a distributed document and key-value database designed for low-latency operational workloads.\n\n**Why you would use it:** It can fit applications needing flexible JSON documents, distributed scale, caching-like performance, and SQL-like querying over documents.\n\n**Pros**\n- Combines key-value access with document querying.\n- Built for distributed scale and high availability.\n- Supports flexible JSON documents.\n- Useful caching and mobile synchronization capabilities.\n\n**Cons**\n- Operational complexity can be higher than a simple relational database.\n- Smaller ecosystem than the most common SQL choices.\n- Data modeling still requires care for joins and relationships.\n\n### Most common use cases\n- Distributed session and profile storage.\n- Low-latency JSON document access.\n- Mobile applications needing synchronization.\n- Caching plus persistent document storage.\n- Distributed operational workloads.\n\n### Why use Couchbase instead of other document databases?\nChoose Couchbase when you want **document storage combined with fast key-value access and strong distributed/mobile capabilities**. Compared with MongoDB, Couchbase can be appealing for applications that benefit from integrated caching behavior, mobile synchronization, or a combined key-value/document architecture."
+                              }
+                            ]
+                          }
+                        }
+                      ]
                     }
                   },
                   {
@@ -424,7 +540,43 @@
                     "accordion": {
                       "id": "55d15300-87fb-4dc1-bffb-436ba80c6fe5",
                       "title": "Wide-column",
-                      "children": []
+                      "children": [
+                        {
+                          "id": "a549e147-704f-46a9-b726-0881881f084a",
+                          "type": "text",
+                          "content": "## Wide-column\n\n**What it is:** A wide-column database organizes data into rows and column families rather than enforcing the fixed table shape typical of relational databases.\n\n**What it does:** It is designed to distribute very large datasets across many machines and handle extremely high write throughput with predictable access patterns.\n\n**Why you would use it:**\n- You have massive data volume.\n- You need high write throughput.\n- You need horizontal scalability across many nodes or regions.\n- Queries are known in advance and can be designed around partition keys.\n- Availability is more important than rich joins.\n\n**Common use cases:** Event streams, IoT data, activity feeds, telemetry, messaging metadata, and very large write-heavy systems.\n\n**Tradeoffs:** Wide-column databases scale exceptionally well, but data modeling is query-driven and ad hoc querying, joins, and multi-row transactions are typically more limited.\n\n### Most common use cases\n- Massive event and activity streams.\n- IoT telemetry at very high write rates.\n- Messaging metadata.\n- Time-ordered feeds with known query patterns.\n- Large-scale logging and analytical ingestion.\n- Globally distributed systems where high availability is critical.\n\n### Why use this instead of alternative categories?\nChoose a wide-column database when you need **very large scale, predictable partition-key access, and sustained write throughput across many machines**. Compared with SQL, it generally scales writes horizontally more naturally. Compared with document databases, it can be better suited to extremely large, append-heavy workloads. Compared with key-value stores, it gives more structure around rows and column families. The tradeoff is that you usually design tables around known queries and give up flexible joins and ad hoc access."
+                        },
+                        {
+                          "id": "afe35106-7ceb-4a11-a40c-0c85db65d42b",
+                          "type": "accordion",
+                          "accordion": {
+                            "id": "93a185aa-d975-4a5c-bd28-2424d168c584",
+                            "title": "Apache Cassandra",
+                            "children": [
+                              {
+                                "id": "b3a66ada-40a9-4f69-8d03-672c3464405f",
+                                "type": "text",
+                                "content": "## Apache Cassandra\n\n**What it does:** Cassandra is a distributed wide-column database designed for high availability, fault tolerance, and very high write throughput across many nodes.\n\n**Why you would use it:** Use Cassandra for massive write-heavy workloads with predictable query patterns where horizontal scale and availability are more important than joins or complex transactions.\n\n**Pros**\n- Excellent horizontal scalability.\n- High write throughput.\n- No single point of failure in its peer-to-peer architecture.\n- Strong multi-datacenter capabilities.\n\n**Cons**\n- Query patterns must be designed ahead of time.\n- Joins are not supported.\n- Data is commonly duplicated across tables for different queries.\n- Operational and data-modeling complexity can be significant.\n\n### Most common use cases\n- High-volume event ingestion.\n- Messaging systems.\n- Activity feeds.\n- IoT telemetry.\n- Large-scale write-heavy services.\n- Multi-datacenter applications requiring high availability.\n\n### Why use Cassandra instead of other wide-column databases?\nChoose Cassandra when you need **very high write throughput, horizontal scaling, and strong multi-datacenter availability without a single master node**. Compared with HBase, Cassandra is often preferred for always-on operational workloads and geographically distributed deployments. HBase may be a better fit when the system is already deeply integrated with Hadoop/HDFS and needs stronger row-level consistency patterns."
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "id": "ec0e7b5b-6498-4562-94ec-584d7115fa40",
+                          "type": "accordion",
+                          "accordion": {
+                            "id": "5b7eb866-60bf-4213-a385-d956e11b8fb4",
+                            "title": "Apache HBase",
+                            "children": [
+                              {
+                                "id": "3035b2df-5fb4-4fc1-a289-fc9959b07ac0",
+                                "type": "text",
+                                "content": "## Apache HBase\n\n**What it does:** HBase is a distributed wide-column database built on the Hadoop ecosystem and modeled after Google's Bigtable concepts.\n\n**Why you would use it:** It is useful for extremely large sparse datasets that need random read/write access and already live in a Hadoop-oriented environment.\n\n**Pros**\n- Handles very large datasets.\n- Strong consistency for row-level operations.\n- Good fit with Hadoop/HDFS ecosystems.\n- Efficient for sparse wide tables.\n\n**Cons**\n- Operationally complex.\n- Usually requires a broader Hadoop ecosystem.\n- Not designed for relational joins or rich ad hoc SQL.\n- Often heavier than newer managed alternatives.\n\n### Most common use cases\n- Very large sparse datasets.\n- Random access to data stored in Hadoop environments.\n- Large analytical/operational systems built around HDFS.\n- Massive tables requiring row-level consistency.\n\n### Why use HBase instead of other wide-column databases?\nChoose HBase when you already operate in the **Hadoop/HDFS ecosystem** and need Bigtable-style random read/write access over very large datasets. Compared with Cassandra, HBase can be a stronger fit when Hadoop integration and row-level consistency are priorities, while Cassandra is often easier for highly available multi-datacenter operational workloads."
+                              }
+                            ]
+                          }
+                        }
+                      ]
                     }
                   },
                   {
@@ -433,7 +585,43 @@
                     "accordion": {
                       "id": "b16dfa26-5889-47e9-a1df-33f0e57dfc83",
                       "title": "Graph",
-                      "children": []
+                      "children": [
+                        {
+                          "id": "c82ef4a0-a98c-4fd2-8acb-96c7a1fdeb50",
+                          "type": "text",
+                          "content": "## Graph\n\n**What it is:** A graph database models data as nodes and relationships, often with properties attached to both.\n\n**What it does:** It makes traversing relationships efficient, especially when queries involve multiple hops between connected entities.\n\n**Why you would use it:**\n- Relationships are a core part of the product.\n- You frequently ask multi-hop questions.\n- The connections between entities matter as much as the entities themselves.\n- Recursive relationship queries would be awkward or expensive in SQL.\n\n**Common use cases:** Social graphs, fraud detection, recommendation systems, network topology, identity graphs, knowledge graphs, and access-control relationships.\n\n**Tradeoffs:** Graph databases excel at relationship traversal but are usually not the first choice for simple transactional CRUD or massive append-only workloads.\n\n### Most common use cases\n- Social networks and follower/friend relationships.\n- Fraud-ring and money-flow analysis.\n- Recommendation and similarity relationships.\n- Identity and account-linking graphs.\n- Knowledge graphs.\n- Network, dependency, and infrastructure topology.\n- Fine-grained authorization relationships.\n\n### Why use this instead of alternative categories?\nChoose a graph database when the hardest queries are about **relationships and multi-hop traversal**. SQL can model relationships, but deeply recursive joins can become cumbersome or expensive. Document and key-value databases usually require application-side traversal or denormalization. Graph databases make relationships first-class and are often much easier to query when the question is “how are these entities connected?”"
+                        },
+                        {
+                          "id": "9f4b49e9-52de-424b-8d48-810fd9b5284f",
+                          "type": "accordion",
+                          "accordion": {
+                            "id": "1f1cf4cd-35a3-4a62-ab0c-014bb3973ef9",
+                            "title": "Neo4j",
+                            "children": [
+                              {
+                                "id": "7a35f13c-0417-46e1-838d-62ef7b7299e3",
+                                "type": "text",
+                                "content": "## Neo4j\n\n**What it does:** Neo4j is a property graph database where nodes and relationships can both contain properties. Queries are commonly written using Cypher.\n\n**Why you would use it:** Use Neo4j when relationship traversal is central to the workload, such as social connections, fraud rings, dependency graphs, or recommendation paths.\n\n**Pros**\n- Excellent multi-hop traversal performance.\n- Expressive Cypher query language.\n- Natural modeling of relationships.\n- Strong tooling and graph ecosystem.\n\n**Cons**\n- Not usually the best primary database for generic CRUD systems.\n- Horizontal scaling patterns differ from distributed key-value systems.\n- Teams may need to learn graph-specific modeling and query techniques.\n\n### Most common use cases\n- Social relationship graphs.\n- Fraud and suspicious-network detection.\n- Recommendation engines.\n- Dependency graphs.\n- Knowledge graphs.\n- Access-control relationship modeling.\n\n### Why use Neo4j instead of other graph databases?\nChoose Neo4j when you want a **developer-friendly property graph database with mature tooling and the Cypher query language**. Compared with Amazon Neptune, Neo4j is attractive when you want more deployment flexibility, a strong graph-specific developer experience, and less dependence on AWS-managed infrastructure."
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "id": "5629c16a-746a-4d19-b187-be5be76c5c6b",
+                          "type": "accordion",
+                          "accordion": {
+                            "id": "70648dd8-9b38-4307-b756-52693efd1845",
+                            "title": "Amazon Neptune",
+                            "children": [
+                              {
+                                "id": "a3a036f2-8742-4d7f-b1a0-d578439f2c8f",
+                                "type": "text",
+                                "content": "## Amazon Neptune\n\n**What it does:** Amazon Neptune is a managed graph database supporting property graphs and RDF graph models.\n\n**Why you would use it:** It fits teams that want managed graph infrastructure on AWS for knowledge graphs, fraud analysis, identity relationships, or recommendation use cases.\n\n**Pros**\n- Managed AWS service.\n- Supports multiple graph models and query languages.\n- Built-in high availability and backups.\n- Integrates with the AWS ecosystem.\n\n**Cons**\n- AWS-specific managed-service dependency.\n- Can be more expensive than self-hosted options.\n- Graph workloads require specialized modeling expertise.\n\n### Most common use cases\n- Knowledge graphs.\n- Identity graphs.\n- Fraud detection.\n- Recommendation relationships.\n- Graph workloads integrated with AWS services.\n\n### Why use Neptune instead of other graph databases?\nChoose Neptune when you want a **managed graph database inside AWS** and prefer to offload replication, backups, patching, and infrastructure operations. Compared with Neo4j, Neptune is often attractive for AWS-native teams that prioritize managed operations and cloud integration over self-hosting flexibility."
+                              }
+                            ]
+                          }
+                        }
+                      ]
                     }
                   },
                   {
@@ -442,7 +630,43 @@
                     "accordion": {
                       "id": "9d8a10cd-9a04-4763-9039-c88115f28326",
                       "title": "Time Series",
-                      "children": []
+                      "children": [
+                        {
+                          "id": "bcd63876-6497-4f31-a2af-1be1b2ed351a",
+                          "type": "text",
+                          "content": "## Time Series\n\n**What it is:** A time-series database is optimized for records associated with timestamps.\n\n**What it does:** It efficiently stores, compresses, indexes, aggregates, and queries measurements over time.\n\n**Why you would use it:**\n- Most queries filter or aggregate by time ranges.\n- New data is continuously appended.\n- You need retention policies or automatic downsampling.\n- You frequently compute time-based metrics such as averages, percentiles, rates, or trends.\n\n**Common use cases:** Infrastructure metrics, application monitoring, IoT sensors, financial market data, logs, telemetry, and operational analytics.\n\n**Tradeoffs:** Time-series databases are highly optimized for time-oriented workloads, but they are usually not ideal as a general-purpose transactional database.\n\n### Most common use cases\n- Infrastructure and application monitoring.\n- IoT sensor measurements.\n- Financial price or trading data.\n- Operational telemetry.\n- CPU, memory, latency, and request metrics.\n- Energy and environmental measurements.\n- Trend analysis over time.\n\n### Why use this instead of alternative categories?\nChoose a time-series database when the workload is dominated by **timestamped append-heavy data and time-range aggregation**. Compared with general-purpose SQL or document databases, time-series systems often provide better compression, retention policies, downsampling, and time-window queries. They are a better fit when time is central to almost every query, but they are usually a poor replacement for a general transactional database."
+                        },
+                        {
+                          "id": "6d2a0b92-ac9a-441d-a4b6-716ba368ea88",
+                          "type": "accordion",
+                          "accordion": {
+                            "id": "33b383d9-012b-44ff-9304-0729b609787b",
+                            "title": "InfluxDB",
+                            "children": [
+                              {
+                                "id": "d5150353-fb37-46d1-bd79-c2839ef3571e",
+                                "type": "text",
+                                "content": "## InfluxDB\n\n**What it does:** InfluxDB is designed for timestamped metrics and events, with features for retention, compression, aggregation, and time-window queries.\n\n**Why you would use it:** It is useful when the workload is dominated by continuously arriving measurements and queries such as averages, rates, thresholds, and trends over time.\n\n**Pros**\n- Purpose-built for time-series workloads.\n- Efficient retention and time-window querying.\n- Strong ecosystem for monitoring and IoT.\n- Good compression for timestamped measurements.\n\n**Cons**\n- Specialized rather than general-purpose.\n- Relational queries and joins are limited compared with SQL databases.\n- Architecture and query language choices vary across product versions.\n\n### Most common use cases\n- Infrastructure monitoring.\n- Application metrics.\n- IoT sensor data.\n- DevOps observability.\n- Time-based dashboards.\n- High-frequency measurements.\n\n### Why use InfluxDB instead of other time-series databases?\nChoose InfluxDB when you want a **purpose-built time-series platform** focused heavily on metrics, monitoring, retention, and time-window analysis. Compared with TimescaleDB, InfluxDB is more specialized for time-series workloads, while TimescaleDB is attractive when you need PostgreSQL compatibility and relational joins."
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "id": "724f3424-cdcb-4a5d-9d94-7fa944905760",
+                          "type": "accordion",
+                          "accordion": {
+                            "id": "07b076ef-fa39-4506-b8f8-68a1a34e0d5f",
+                            "title": "TimescaleDB",
+                            "children": [
+                              {
+                                "id": "779ca728-d808-48fe-bfcf-b2cd87535945",
+                                "type": "text",
+                                "content": "## TimescaleDB\n\n**What it does:** TimescaleDB extends PostgreSQL with time-series-oriented storage, partitioning, compression, retention, and continuous aggregation.\n\n**Why you would use it:** It is a strong option when you want time-series optimizations while keeping PostgreSQL, SQL, joins, transactions, and the broader Postgres ecosystem.\n\n**Pros**\n- Uses PostgreSQL and standard SQL.\n- Supports joins between time-series and relational data.\n- Strong Postgres ecosystem compatibility.\n- Time-series compression and continuous aggregates.\n\n**Cons**\n- Operational characteristics still inherit many PostgreSQL considerations.\n- Extremely specialized distributed workloads may fit dedicated systems better.\n- Some advanced features depend on the chosen edition or deployment model.\n\n### Most common use cases\n- Application and infrastructure metrics.\n- Financial and market data.\n- IoT telemetry.\n- Operational analytics.\n- Systems that combine normal relational data with time-series measurements.\n\n### Why use TimescaleDB instead of other time-series databases?\nChoose TimescaleDB when you want **time-series optimization without giving up PostgreSQL and SQL**. Compared with InfluxDB, it is especially useful when your time-series data must be joined with ordinary relational data or your team already has strong PostgreSQL experience."
+                              }
+                            ]
+                          }
+                        }
+                      ]
                     }
                   }
                 ]
