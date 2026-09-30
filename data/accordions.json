@@ -729,7 +729,23 @@
         "accordion": {
           "id": "856bed0d-219a-40bd-9be2-75fea43a226d",
           "title": "Design Patterns",
-          "children": []
+          "children": [
+            {
+              "id": "f81c8ce6-7ee7-481b-b125-001b84e973ee",
+              "type": "accordion",
+              "accordion": {
+                "id": "d240cd52-98b6-40b6-bdaa-8325c78e6132",
+                "title": "AI Data Pipeline",
+                "children": [
+                  {
+                    "id": "08bfcaf6-ac90-42ae-b245-2cd002e6e543",
+                    "type": "text",
+                    "content": "```\nDATA SOURCES\n     ↓\nINGESTION\n     ↓\nTRANSPORT / BUFFER\n     ↓\nPROCESSING / TRANSFORMATION\n     ↓\nSTORAGE\n     ↓\nSERVING / QUERY\n     ↓\nCONSUMERS\n```"
+                  }
+                ]
+              }
+            }
+          ]
         }
       }
     ]
@@ -737,7 +753,1173 @@
   {
     "id": "314a9a39-c750-4745-81c9-959cc6792187",
     "title": "Step 7: Deep Dives (~10 minutes)",
-    "children": []
+    "children": [
+      {
+        "id": "b7dc8964-6b68-400d-8071-a395f9bde7de",
+        "type": "text",
+        "content": "# Mid-Level System Design Interview Guide\n\nThis guide focuses on **when to use each concept, how it works, tradeoffs, alternatives, implementation choices, and how deeply to discuss it in a mid-level interview**.\n\nA strong interview pattern is:\n\n1. Start with the simplest architecture that satisfies the requirements.\n2. Identify a concrete bottleneck, correctness requirement, or reliability problem.\n3. Introduce the mechanism that solves that problem.\n4. Explain the tradeoff you are accepting.\n5. Mention an alternative and why you did not choose it.\n"
+      },
+      {
+        "id": "3abacd5b-f23a-4905-a3dd-b10af3be40c4",
+        "type": "accordion",
+        "accordion": {
+          "id": "48bbfacd-7972-4fa9-a657-272f8e472b0b",
+          "title": "WAL - Write-Ahead Log",
+          "children": [
+            {
+              "id": "58cf976e-da1a-4e95-9348-e0fe7b40fd1a",
+              "type": "text",
+              "content": "# WAL — Write-Ahead Log\n\nA **write-ahead log (WAL)** is an append-only durability log written **before** the database updates its main data pages.\n\nCore rule:\n\n> **Persist the change to the log first; update the final data structure later.**\n\nThis helps databases provide durability while avoiding a synchronous random disk write for every modified row.\n\n## Common use cases\n- relational database durability\n- crash recovery\n- replication\n- high-throughput transactional writes\n- change-data capture sources in some systems\n\n## When to mention it in an interview\nBring WAL up when the discussion reaches **database durability, replication, recovery, or write throughput**. It is usually a supporting detail rather than a top-level architecture box."
+            },
+            {
+              "id": "9c0351c5-2e1d-424b-b438-a6acc7239698",
+              "type": "accordion",
+              "accordion": {
+                "id": "123a7df7-2ad6-4500-b642-88c3b823361d",
+                "title": "How WAL Is Implemented",
+                "children": [
+                  {
+                    "id": "3e4712e2-836c-483a-ad4c-5342eff34986",
+                    "type": "text",
+                    "content": "A simplified transaction flow is:\n\n```text\nClient writes\n   ↓\nDatabase creates log record\n   ↓\nAppend WAL record\n   ↓\nfsync WAL\n   ↓\nAcknowledge commit\n   ↓\nFlush changed data pages later\n```\n\nIf the database crashes after the WAL is durable but before the table page is flushed, it can replay the WAL after restart.\n\nThis is efficient because appending sequentially to a log is generally cheaper than immediately issuing many random writes to scattered data pages."
+                  },
+                  {
+                    "id": "d5a104ac-8eb5-4a77-93ba-42c3ce39a2db",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "ae8dc0bf-a29c-410e-b3b8-ced3eb82bbe4",
+                      "title": "Recovery and Checkpoints",
+                      "children": [
+                        {
+                          "id": "2bb462b5-2404-4ae6-a392-1db85c4231bb",
+                          "type": "text",
+                          "content": "## Recovery\n\nOn restart, the database scans the WAL from a known safe point and reapplies committed operations that are not reflected in the persisted data pages.\n\n## Checkpoints\n\nA checkpoint records that data pages up to some position have been persisted.\n\nTradeoff:\n- frequent checkpoints → more background I/O, faster recovery\n- infrequent checkpoints → less checkpoint pressure, slower recovery\n\nThis prevents recovery from needing to replay the entire history."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "88de1d45-0e08-4c2f-bff7-ae3e20d99a8b",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "be038173-715e-43cd-bf43-27145cf48b39",
+                      "title": "Replication from WAL",
+                      "children": [
+                        {
+                          "id": "8d5fe30f-3a31-4cca-b262-3ae4b736e81e",
+                          "type": "text",
+                          "content": "Many databases stream WAL/log records to replicas.\n\n```text\nPrimary\n  ↓ WAL stream\nReplica\n```\n\nThe replica replays the ordered changes.\n\nBenefits:\n- efficient incremental replication\n- preserves write ordering\n- enables read replicas and failover\n\nTradeoffs:\n- replication lag\n- stale replica reads\n- failover must account for how much WAL each replica has applied"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "7036861f-8be4-445e-9e14-5f9725890ba1",
+              "type": "accordion",
+              "accordion": {
+                "id": "4fea47bd-95b8-4eb3-ac59-71cbccb6c64d",
+                "title": "Tradeoffs and Alternatives",
+                "children": [
+                  {
+                    "id": "85ab0243-394f-405c-8b3d-c1161a8dbbac",
+                    "type": "text",
+                    "content": "## Benefits\n- strong crash recovery\n- durable commits\n- efficient sequential writes\n- natural replication stream\n\n## Costs\n- WAL storage must be managed\n- fsync latency can affect commits\n- recovery and checkpoint logic add complexity\n\n## WAL vs event sourcing\nA WAL is normally an **internal database recovery mechanism**. Event sourcing makes **business events** the application source of truth. They are related ideas but should not be treated as the same architecture.\n\n## Interview-level answer\n> \"The database writes the transaction to a durable WAL before flushing the changed pages. That allows fast durable commits, crash recovery by replay, and often replication to followers.\"\n"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "8e7eb2b8-23da-4bd1-b295-281795b15885",
+        "type": "accordion",
+        "accordion": {
+          "id": "a04c272f-60dd-4bf8-aa96-25f823bc7de7",
+          "title": "Pub/Sub",
+          "children": [
+            {
+              "id": "09f2727b-dd98-4d1d-9541-2612ab1aa3d8",
+              "type": "text",
+              "content": "# Publish / Subscribe\n\nPub/sub decouples **event producers** from **event consumers**.\n\n```text\nPublisher\n   ↓\n Topic\n / |  \\\nv  v   v\nA  B   C\n```\n\nA producer publishes an event without needing to know which consumers will process it.\n\n## Common use cases\n- notifications\n- real-time event distribution\n- cache invalidation\n- analytics\n- service integration\n- WebSocket fan-out\n- asynchronous side effects\n\nUse pub/sub when **multiple independent consumers need the same event**."
+            },
+            {
+              "id": "091c179a-ae18-495f-bbe3-7ebf0da58093",
+              "type": "accordion",
+              "accordion": {
+                "id": "ee7e560e-93f3-434b-babb-287b345baa29",
+                "title": "Implementation Models",
+                "children": [
+                  {
+                    "id": "e9420229-a80e-48ed-a4e8-262274bb3bfc",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "3fd90251-2313-4192-9c64-dc50600b99ab",
+                      "title": "Ephemeral Pub/Sub",
+                      "children": [
+                        {
+                          "id": "83942f03-9c0d-4bf9-a668-3eea6263b338",
+                          "type": "text",
+                          "content": "Messages are delivered only to currently connected subscribers.\n\nUseful for:\n- presence signals\n- live UI refreshes\n- cache invalidation where missing one event is recoverable\n\nPros:\n- simple\n- low latency\n\nCons:\n- offline subscribers can miss messages\n- no replay\n\nRedis Pub/Sub-style systems fit this model."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "dcbe07ec-9a16-4bf4-a1ff-933b43160514",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "b7a0db44-7d78-4e69-ae86-1c75a8a65a52",
+                      "title": "Durable Pub/Sub",
+                      "children": [
+                        {
+                          "id": "2fbc7429-518d-4bfc-bab1-d3883685f898",
+                          "type": "text",
+                          "content": "Events are persisted until consumers acknowledge or advance their offsets.\n\nUseful for:\n- business events\n- analytics\n- search indexing\n- workflows\n- replayable event streams\n\nTypical concerns:\n- retries\n- consumer groups\n- offsets / acknowledgements\n- retention\n- dead-letter queues\n- idempotent consumers"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "386359af-2666-4155-a444-1ca2f6ced9bc",
+              "type": "accordion",
+              "accordion": {
+                "id": "fab9a609-a91a-473d-9da5-a5be83242824",
+                "title": "Delivery Semantics",
+                "children": [
+                  {
+                    "id": "ca204d5f-f549-4094-86a6-bf1d87515764",
+                    "type": "text",
+                    "content": "Common semantics:\n\n### At-most-once\nMay lose messages; avoids retries that create duplicates.\n\n### At-least-once\nMessages are retried, so duplicates are possible.\n\n### Exactly-once\nHard to guarantee end-to-end and usually narrowly scoped to a particular platform or transaction boundary.\n\nFor interviews, a safe practical default is:\n\n> **Use at-least-once delivery and make consumers idempotent.**\n"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "0e94b39d-1e98-4920-97c2-8ba40626269a",
+              "type": "accordion",
+              "accordion": {
+                "id": "d417908a-b0c0-4898-b3e1-90810f4df570",
+                "title": "Pub/Sub vs Queue",
+                "children": [
+                  {
+                    "id": "d90009c1-c9b6-46b0-bf59-8424583ace20",
+                    "type": "text",
+                    "content": "### Queue\nUsually distributes a job so **one worker** performs it.\n\n```text\nProducer → Queue → Worker\n```\n\n### Pub/Sub\nAllows **multiple independent consumers** to receive the same logical event.\n\n```text\nOrder Created\n  ↓\nTopic\n ├→ Email\n ├→ Analytics\n └→ Inventory\n```\n\nUse a queue for work distribution. Use pub/sub for event fan-out."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "7b9f628d-c0c8-442c-a3ec-8cc6839221b5",
+              "type": "accordion",
+              "accordion": {
+                "id": "388adaa4-e41d-4705-b83e-efec0414058d",
+                "title": "Interview Guidance",
+                "children": [
+                  {
+                    "id": "9b060308-5262-414d-92f3-4a57aba7de3e",
+                    "type": "text",
+                    "content": "Bring pub/sub up when synchronous service-to-service calls would create unnecessary coupling.\n\nA strong statement:\n\n> \"The Order Service publishes `order_created`; email, analytics, and inventory subscribe independently. That keeps the request path fast and prevents the Order Service from synchronously depending on every downstream service.\"\n\nThen discuss durability, retries, ordering, and idempotency only as required."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "4da9076d-e0bf-4898-bc1e-02b1762ed7ce",
+        "type": "accordion",
+        "accordion": {
+          "id": "0100e9ea-4ebe-4c9a-90ae-2105194e6cfb",
+          "title": "WebSockets",
+          "children": [
+            {
+              "id": "2c5f8584-fb3e-4746-8a92-c26dc28c82ac",
+              "type": "text",
+              "content": "# WebSockets\n\nWebSockets provide a **long-lived, bidirectional connection**.\n\n```text\nClient ⇄ Server\n```\n\nEither side can send data without waiting for a new HTTP request.\n\n## Common use cases\n- chat\n- collaborative editing\n- multiplayer games\n- presence\n- live trading interfaces\n- frequent bidirectional real-time updates\n\nUse them when the client and server both need to exchange frequent low-latency events."
+            },
+            {
+              "id": "471443bf-de97-467b-9870-caacb1dba8d9",
+              "type": "accordion",
+              "accordion": {
+                "id": "3cfc0ba9-fe0a-4bcf-879b-981d66fbc2c3",
+                "title": "Connection Lifecycle",
+                "children": [
+                  {
+                    "id": "104a4fe5-cf15-4c11-8ef5-31386e264643",
+                    "type": "text",
+                    "content": "A client begins with an HTTP upgrade and then maintains a persistent socket.\n\nImportant implementation concerns:\n- authenticate the connection\n- associate user identity with the socket\n- heartbeat / ping-pong to detect dead clients\n- reconnect with backoff\n- recover missed messages after reconnect\n- drain connections during deploys"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "0356fe53-799e-4392-8909-428405112de6",
+              "type": "accordion",
+              "accordion": {
+                "id": "b98cb5c6-9a9b-4d53-b38a-f32b3ff5a756",
+                "title": "Scaling WebSockets",
+                "children": [
+                  {
+                    "id": "9af816ab-2546-4aa8-bf0c-4e441508e3f8",
+                    "type": "text",
+                    "content": "Each live socket is attached to one server process.\n\n```text\nAlice → WS Server 1\nBob   → WS Server 7\n```\n\nIf Alice sends Bob a message:\n\n```text\nAlice\n  ⇄\nWS 1\n  ↓\nPub/Sub\n  ↓\nWS 7\n  ⇄\nBob\n```\n\nThe pub/sub layer bridges WebSocket servers.\n\nA shared registry may optionally map:\n\n```text\nuser_123 → ws_server_7\n```\n\nThis allows targeted routing but adds coordination state."
+                  },
+                  {
+                    "id": "b7a53d78-259a-448e-b528-af485a9cd301",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "68d20755-3965-4910-bee1-ab778ae8165f",
+                      "title": "Load Balancing and Connection State",
+                      "children": [
+                        {
+                          "id": "6768a74d-e0c5-4a28-bdc7-9ae46f2ea312",
+                          "type": "text",
+                          "content": "The load balancer chooses a WebSocket server **when the connection is created**. The established connection then remains attached to that server.\n\nConcerns:\n- maximum sockets per instance\n- memory usage per connection\n- reconnect storms\n- connection draining\n- health checks\n- sticky routing if the architecture requires it\n\nThis is why WebSocket servers are considered stateful with respect to active connections."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "3b4d3751-dbe8-4846-a07e-eb9bfb83a87a",
+              "type": "accordion",
+              "accordion": {
+                "id": "cea5f058-3e83-4b74-96d9-94f583bae20c",
+                "title": "Alternatives",
+                "children": [
+                  {
+                    "id": "839470af-31fa-42c7-8706-d6abaf97cda0",
+                    "type": "text",
+                    "content": "## SSE\nOne-way server → client streaming. Simpler when the client does not need frequent upstream messages.\n\n## Long polling\nServer holds an HTTP request until data becomes available.\n\n## Short polling\nClient repeatedly calls an endpoint.\n\nRule of thumb:\n- infrequent updates → polling\n- one-way streaming → SSE\n- frequent bidirectional updates → WebSockets"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "099723c9-eb0e-4f4f-a90c-d975075b7af9",
+              "type": "accordion",
+              "accordion": {
+                "id": "3d97e445-ab94-4aab-90bf-bd56e89785e2",
+                "title": "Interview Guidance",
+                "children": [
+                  {
+                    "id": "a170247b-5b19-4697-bef1-b644ef8f47cc",
+                    "type": "text",
+                    "content": "> \"I'll use REST for normal resource operations and message history, and WebSockets for active real-time delivery. A pub/sub layer lets events reach users connected to different WebSocket servers.\"\n\nBe ready to discuss reconnects and missed-event recovery."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "bece2ab5-ba39-4f62-8b97-614088085ec0",
+        "type": "accordion",
+        "accordion": {
+          "id": "493fbbd6-d2c1-44aa-af15-d335db19a4d9",
+          "title": "Hash-Based Routing",
+          "children": [
+            {
+              "id": "120ad8b6-7cfb-48cc-ab96-ed4b732297e6",
+              "type": "text",
+              "content": "# Hash-Based Routing\n\nHash-based routing chooses a destination by hashing a stable key such as:\n- user ID\n- tenant ID\n- session ID\n- cache key\n- object ID\n\nTypical uses:\n- sticky routing\n- cache partitioning\n- database sharding\n- ownership of stateful partitions\n\nBasic form:\n\n```text\ndestination = hash(key) % N\n```"
+            },
+            {
+              "id": "db10c578-58ae-4f3b-921d-ee63d54803eb",
+              "type": "accordion",
+              "accordion": {
+                "id": "838a6837-810f-43c9-9a96-ae9a989b9120",
+                "title": "Modulo Hashing",
+                "children": [
+                  {
+                    "id": "debd0d46-e8b5-443b-98ad-3c64ccf3ed70",
+                    "type": "text",
+                    "content": "Modulo hashing is simple and fast.\n\nProblem: when `N` changes, a large percentage of keys move.\n\nThat can cause:\n- cache invalidation\n- expensive data redistribution\n- session movement\n\nUse it when the destination set is stable or remapping is acceptable."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "1da4fb9a-a291-4f45-9a77-dfdd33e81927",
+              "type": "accordion",
+              "accordion": {
+                "id": "a239d0e2-3cd9-40a2-9c8a-0db695010056",
+                "title": "Consistent Hashing",
+                "children": [
+                  {
+                    "id": "80cdd3f0-eeb7-4d15-a1e7-7038522ae33a",
+                    "type": "text",
+                    "content": "Consistent hashing places keys and servers on a logical ring.\n\nWhen nodes are added or removed, only part of the keyspace moves.\n\nCommon for:\n- distributed caches\n- storage systems\n- partition ownership\n\n### Virtual nodes\nA physical server owns many positions on the ring.\n\nBenefits:\n- smoother distribution\n- easier rebalancing\n- support for unequal server capacity\n\nTradeoff: more routing metadata and complexity."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "e7ef2786-b23d-4c08-8928-dc2b0b41b2a1",
+              "type": "accordion",
+              "accordion": {
+                "id": "ffae72d8-ddcd-4bed-a02a-3d4640f5e640",
+                "title": "Alternatives",
+                "children": [
+                  {
+                    "id": "586df779-f2cd-4d02-8a16-2057a0a47a03",
+                    "type": "text",
+                    "content": "- **Round robin:** best for interchangeable stateless servers.\n- **Least connections:** good when request durations vary.\n- **Weighted routing:** good for unequal server capacities.\n- **Directory routing:** explicit `key → destination` table; highly flexible but requires routing metadata.\n\nUse hash routing when **affinity matters**, not merely because there are multiple servers."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "6d19b8b0-0577-473d-ae05-e3a8dbc38914",
+              "type": "accordion",
+              "accordion": {
+                "id": "a8d5b799-423f-4c8d-9783-4918e63ebfc8",
+                "title": "Interview Guidance",
+                "children": [
+                  {
+                    "id": "64219350-6bce-4f73-8d7b-b0b6b293f672",
+                    "type": "text",
+                    "content": "> \"For stateless application servers I would use normal load balancing. I would use hash-based routing when the same key should consistently reach the same partition or owner, and consistent hashing if nodes are frequently added or removed.\"\n"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "c4237e95-f656-479d-b988-c75140b67608",
+        "type": "accordion",
+        "accordion": {
+          "id": "600d364d-9944-4dc7-a1d1-a69484a517ae",
+          "title": "Weighted Routing",
+          "children": [
+            {
+              "id": "624caf41-5bfd-4b3b-a775-ae78d65bfc71",
+              "type": "text",
+              "content": "# Weighted Routing\n\nWeighted routing assigns different traffic shares to destinations.\n\nExample:\n\n```text\nA weight 5 → ~50%\nB weight 3 → ~30%\nC weight 2 → ~20%\n```\n\n## Common uses\n- servers with different capacities\n- canary deployments\n- blue/green migration\n- multi-region traffic shifting\n- experiments\n- gradual failover"
+            },
+            {
+              "id": "20de828a-4705-4b34-8136-11f676f105cd",
+              "type": "accordion",
+              "accordion": {
+                "id": "9cc81050-9ba0-4308-8813-877cb016aad8",
+                "title": "Implementation Approaches",
+                "children": [
+                  {
+                    "id": "df411058-ccfe-4f1d-b100-52b6433a6615",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "22a595cc-3a0b-4a86-b71f-5e43c8e04d39",
+                      "title": "Weighted Round Robin",
+                      "children": [
+                        {
+                          "id": "952eb75c-c15b-40cf-a98e-1a5f5fa69914",
+                          "type": "text",
+                          "content": "Backends receive requests proportionally to configured weights.\n\nGood when:\n- requests are roughly similar\n- server capacities are known\n\nTradeoff:\n- static weights do not respond automatically to current load."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "03da9f80-a264-4051-b242-47723f54773d",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "3c917f9d-279a-45f3-9983-395dfeab8c2d",
+                      "title": "Dynamic Weighting",
+                      "children": [
+                        {
+                          "id": "aa50ed2b-2a06-41cd-a336-61b23261e2a2",
+                          "type": "text",
+                          "content": "Weights change based on signals such as:\n- CPU\n- latency\n- error rate\n- queue depth\n\nPros:\n- adapts to live conditions\n\nCons:\n- control-loop complexity\n- rapid adjustments can create instability or oscillation"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "05adffbb-37f7-4ec0-a9d8-d4b138fd124f",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "e521ee07-b4c5-415d-a667-38f045668170",
+                      "title": "Canary and Deployment Routing",
+                      "children": [
+                        {
+                          "id": "ca72e8eb-324d-4c28-beac-2e955360ec50",
+                          "type": "text",
+                          "content": "Example:\n\n```text\n95% → version A\n5%  → version B\n```\n\nObserve:\n- errors\n- latency\n- business metrics\n\nThen gradually increase B.\n\nThis is one of the most common practical reasons weighted routing appears in interviews."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "a62577e5-b032-43ad-81e9-60dafed94c97",
+              "type": "accordion",
+              "accordion": {
+                "id": "4b0f8fc3-f56c-4131-ade9-c6df7834f1b0",
+                "title": "Alternatives and Guidance",
+                "children": [
+                  {
+                    "id": "23229a85-26d1-4abd-a189-a2da43df164f",
+                    "type": "text",
+                    "content": "Alternatives:\n- round robin for equal servers\n- least connections for variable request lengths\n- hash routing for affinity\n- latency-based routing for geographic optimization\n\nMention weighted routing when capacity, deployment rollout, or region distribution is relevant. It usually does not require a deep dive unless traffic shifting is a core requirement."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "04657526-0ce8-41c7-ba49-e915309177c6",
+        "type": "accordion",
+        "accordion": {
+          "id": "f81e1816-9c97-4c5c-8699-a20593e0268a",
+          "title": "Horizontal Scaling",
+          "children": [
+            {
+              "id": "29333075-699f-4571-91a8-2a74efab37ec",
+              "type": "text",
+              "content": "# Horizontal Scaling\n\nHorizontal scaling means adding more instances.\n\n```text\nLoad Balancer\n ├→ App 1\n ├→ App 2\n └→ App 3\n```\n\nVertical scaling means giving one machine more CPU, memory, or storage.\n\nHorizontal scaling is especially easy for **stateless application servers**."
+            },
+            {
+              "id": "c9191a90-df9f-4e7e-bb03-4c3bf1fdf964",
+              "type": "accordion",
+              "accordion": {
+                "id": "a2d634a8-dbc7-4a28-a38a-356089c542a1",
+                "title": "Scaling Stateless Application Servers",
+                "children": [
+                  {
+                    "id": "17e16bdc-0d5a-432b-a89b-07a51e937807",
+                    "type": "text",
+                    "content": "Keep important state outside the individual app server.\n\nShared state may live in:\n- database\n- Redis\n- object storage\n\nBenefits:\n- any request can hit any server\n- failed instances are replaceable\n- autoscaling is easier\n- rolling deployments are easier\n\nA standard interview statement is:\n\n> \"I will keep the application tier stateless and horizontally scale it behind a load balancer.\"\n"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "d65697bd-36e2-4cbe-897e-ec6538df559a",
+              "type": "accordion",
+              "accordion": {
+                "id": "06689b0a-c6fc-4fa1-9091-65fe0d6e57e1",
+                "title": "Scaling Stateful Systems",
+                "children": [
+                  {
+                    "id": "c4b2e5dc-3252-465a-a064-a4b776917730",
+                    "type": "text",
+                    "content": "Stateful components require more work.\n\nExamples:\n- databases\n- WebSocket servers\n- caches\n- game servers\n- stream processors\n\nTechniques may include:\n- replication\n- partitioning\n- consistent hashing\n- leader election\n- shared state\n- rebalancing\n\nDo not assume every component scales by simply adding identical servers."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "f021049a-6954-42b1-beb3-b0ad5bc5a2b2",
+              "type": "accordion",
+              "accordion": {
+                "id": "cebb08a0-6c25-4b5d-8238-10edee1237d4",
+                "title": "Horizontal vs Vertical",
+                "children": [
+                  {
+                    "id": "f5a7cf73-194e-4b47-a7b7-23eb21df88aa",
+                    "type": "text",
+                    "content": "## Horizontal\nPros:\n- higher scale ceiling\n- fault tolerance\n- incremental capacity\n\nCons:\n- distributed-system complexity\n- networking and coordination\n- consistency problems\n\n## Vertical\nPros:\n- simpler\n- often cheaper early\n\nCons:\n- hardware ceiling\n- larger failure domain\n\nA good design often vertically scales first, then horizontally scales when required."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "0f1dc53c-c9ce-49fb-9067-95d15a60001c",
+              "type": "accordion",
+              "accordion": {
+                "id": "4d81a6b7-2859-4a1a-84f9-c0c8b6eb590e",
+                "title": "Interview Guidance",
+                "children": [
+                  {
+                    "id": "d4b49098-f8cd-40fc-8e50-cc5d8e32be57",
+                    "type": "text",
+                    "content": "After adding servers, ask:\n\n> **What becomes the next bottleneck?**\n\nIt may be:\n- database connections\n- write throughput\n- locks\n- cache\n- queue\n- external dependency\n\nScaling the app tier does not automatically scale the whole system."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "50ebfdfe-525a-48ad-8fa5-1a01daba0654",
+        "type": "accordion",
+        "accordion": {
+          "id": "7a8707a7-b8f8-43c8-822b-f87e3047637a",
+          "title": "Database Sharding",
+          "children": [
+            {
+              "id": "e0bd317d-5f9c-46e9-a7e8-0607615ae235",
+              "type": "text",
+              "content": "# Database Sharding\n\nSharding splits a logical database horizontally across multiple independent partitions.\n\n```text\nUsers 1..N\n   ↓\nRouter\n ├→ Shard 1\n ├→ Shard 2\n └→ Shard 3\n```\n\nUse sharding when a single database cannot comfortably satisfy:\n- dataset size\n- write throughput\n- read throughput\n- storage growth\n\nSharding should usually come **after simpler optimizations**."
+            },
+            {
+              "id": "112a5b50-0013-4c11-8a45-2dede7a9cd2a",
+              "type": "accordion",
+              "accordion": {
+                "id": "9e52eb9a-87b6-4ba2-8a98-fa426857f751",
+                "title": "Shard Key Design",
+                "children": [
+                  {
+                    "id": "93943f5a-8711-461e-a506-13a39e1ac615",
+                    "type": "text",
+                    "content": "The shard key determines placement.\n\nGood candidates:\n- user ID\n- tenant ID\n- account ID\n\nA good key:\n- has high cardinality\n- spreads traffic evenly\n- spreads storage evenly\n- aligns with common queries\n- minimizes cross-shard operations\n\nPoor choices create hot shards."
+                  },
+                  {
+                    "id": "67ae9561-f6a8-40bf-aa99-029acb54b772",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "a00e3e9c-7e67-45c5-bd0c-39e01b3d2ad9",
+                      "title": "Hash-Based Sharding",
+                      "children": [
+                        {
+                          "id": "d3972bb5-ff51-4a4a-b5a8-0218888af510",
+                          "type": "text",
+                          "content": "```text\nshard = hash(user_id) % N\n```\n\nPros:\n- generally even distribution\n\nCons:\n- range locality is lost\n- shard-count changes can move many rows\n\nConsistent hashing or virtual shards can reduce movement."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "8e2fe9d0-7178-4812-b355-1518cd631d2d",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "1d491255-7e6d-4798-b612-9658747c23a6",
+                      "title": "Range-Based Sharding",
+                      "children": [
+                        {
+                          "id": "2514b9ed-cce4-4822-b9bd-55899c756cd3",
+                          "type": "text",
+                          "content": "Example:\n\n```text\nA-F → 1\nG-M → 2\nN-Z → 3\n```\n\nPros:\n- natural range queries\n\nCons:\n- uneven growth\n- hot ranges\n- timestamp ranges often create a hot \"current\" shard"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "9bb2637b-6407-4a9a-939e-afd4d459c9aa",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "d4ca9509-1959-4540-bd50-3717c8fcbb5d",
+                      "title": "Directory-Based Sharding",
+                      "children": [
+                        {
+                          "id": "4a33cfd4-4e93-4f45-b3ae-ab55fab466ff",
+                          "type": "text",
+                          "content": "Maintain:\n\n```text\ntenant_123 → shard_9\n```\n\nPros:\n- flexible placement\n- easy custom movement\n\nCons:\n- routing directory becomes critical infrastructure\n- metadata consistency and availability matter"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "135cbf2b-774e-4b6d-a96e-43af528523f9",
+              "type": "accordion",
+              "accordion": {
+                "id": "8287ab0b-6900-481d-b471-5fe4ceba4413",
+                "title": "Cross-Shard Problems",
+                "children": [
+                  {
+                    "id": "eb5e766b-878b-498b-9d5e-6050c1296eb3",
+                    "type": "text",
+                    "content": "Sharding complicates:\n- joins\n- transactions\n- global uniqueness\n- aggregations\n- secondary indexes\n- foreign keys\n\nA query like:\n\n```sql\nSELECT COUNT(*) FROM users;\n```\n\nmay require querying all shards and merging results.\n\nDistributed transactions may require 2PC, a saga, or redesigned ownership boundaries."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "dddf9f23-a37a-4531-b923-9892742009b1",
+              "type": "accordion",
+              "accordion": {
+                "id": "2f7d9853-bc85-4b1d-9658-e5886a662fef",
+                "title": "Resharding",
+                "children": [
+                  {
+                    "id": "758bdbe9-bdb7-40a5-8f26-42742c791e9f",
+                    "type": "text",
+                    "content": "As shards fill, data must move.\n\nCommon approaches:\n- virtual shards mapped to physical nodes\n- consistent hashing\n- copy old → new, capture concurrent changes, then cut over\n- split one logical range into smaller ranges\n\nResharding is operationally expensive, which is why shard-key choice matters early."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "1bfd4940-ba20-448b-b6e2-fbf61fe6411a",
+              "type": "accordion",
+              "accordion": {
+                "id": "7852adb2-1abf-4618-9d88-33dd0c6e0118",
+                "title": "Alternatives and Interview Guidance",
+                "children": [
+                  {
+                    "id": "b2056c59-715c-46b2-a294-a4f1ed2ae2f4",
+                    "type": "text",
+                    "content": "Before sharding, consider:\n- indexes\n- query tuning\n- caching\n- read replicas\n- vertical scaling\n- archiving\n- table partitioning\n\nStrong interview statement:\n\n> \"I would shard only when a single write leader or dataset size is the fundamental bottleneck. I would pick a shard key that matches the dominant access pattern and explicitly analyze hot partitions and cross-shard operations.\"\n"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "ce0b9691-4f2c-49e6-b229-3c5c6c6d7725",
+        "type": "accordion",
+        "accordion": {
+          "id": "f6fc5b05-2971-4c6a-b7b3-80986dcc616c",
+          "title": "Fact / Dimension Relationships",
+          "children": [
+            {
+              "id": "319d8160-1614-4679-8384-1b6aca5664f6",
+              "type": "text",
+              "content": "# Fact / Dimension Relationships\n\nFact and dimension modeling is mainly used for **analytics and data warehouses**, not normal OLTP service databases.\n\n### Fact\nA measurable event.\n\n### Dimension\nDescriptive context around that event.\n\nExample:\n\n```text\nFactSales\n- date_id\n- customer_id\n- product_id\n- quantity\n- revenue\n\nDimDate\nDimCustomer\nDimProduct\n```\n\nThis commonly forms a **star schema**."
+            },
+            {
+              "id": "f29a783c-b429-4ad8-97e0-da61d413e15a",
+              "type": "accordion",
+              "accordion": {
+                "id": "edddb151-11f8-459f-8396-17a17028fb22",
+                "title": "Fact Tables",
+                "children": [
+                  {
+                    "id": "a175f06e-cba8-48ed-bfa7-413115c52e1c",
+                    "type": "text",
+                    "content": "Fact tables usually:\n- contain many rows\n- represent events or measurements\n- contain foreign keys to dimensions\n- contain numerical measures\n\nExamples:\n- purchases\n- clicks\n- shipments\n- impressions\n- API requests\n\nMeasures:\n- revenue\n- quantity\n- duration\n- count\n- cost"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "cb962fb7-93f4-4568-9644-cce73b10b46d",
+              "type": "accordion",
+              "accordion": {
+                "id": "ce299f33-2a64-495f-a702-7b8c38131286",
+                "title": "Dimension Tables",
+                "children": [
+                  {
+                    "id": "d6eaa543-f174-4fe6-8654-d8ab123a9afe",
+                    "type": "text",
+                    "content": "Dimensions contain descriptive attributes.\n\nExamples:\n\n```text\nDimProduct:\nbrand\ncategory\nname\n\nDimCustomer:\ncountry\nsegment\nplan\n\nDimDate:\nday\nweek\nmonth\nquarter\nyear\n```\n\nThey let analysts filter and group facts by meaningful business attributes."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "6b1449ac-9109-4b22-bdf9-a080cae47b63",
+              "type": "accordion",
+              "accordion": {
+                "id": "858c073e-43a9-48bc-9db0-9ddbe2f8d5e0",
+                "title": "Star vs Snowflake",
+                "children": [
+                  {
+                    "id": "933d4b96-9b27-4cb8-aa8e-7b11e0f054b3",
+                    "type": "text",
+                    "content": "## Star schema\nFact directly references relatively denormalized dimensions.\n\nPros:\n- simple\n- fewer joins\n- BI friendly\n\n## Snowflake schema\nDimensions are themselves normalized.\n\nPros:\n- less duplication\n\nCons:\n- more joins\n- more complicated analytics\n\nFor interviews, star schema is usually the easier default."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "746bdd6c-b8a2-4d4a-81f1-6e60592279e2",
+              "type": "accordion",
+              "accordion": {
+                "id": "e5827399-dbb0-4903-9142-bc99f70a8635",
+                "title": "Slowly Changing Dimensions",
+                "children": [
+                  {
+                    "id": "cd9d9823-dd1d-436f-9684-b1fa692363b5",
+                    "type": "text",
+                    "content": "Dimension values can change.\n\nExample:\ncustomer plan changes from Basic → Pro.\n\n### Type 1\nOverwrite the old value.\n\nUse when history does not matter.\n\n### Type 2\nInsert a new dimension version with validity dates.\n\nUse when reports must reflect what was true historically.\n\nFor a mid-level interview, understanding Type 1 vs Type 2 is usually sufficient."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "2cb6c31f-e81f-4c82-afe8-a9e3f650d413",
+              "type": "accordion",
+              "accordion": {
+                "id": "0207a30a-7105-44d7-8ab1-ce0430b4143f",
+                "title": "Interview Guidance",
+                "children": [
+                  {
+                    "id": "11f6f0f5-5b32-4874-a8ac-c5358660dcc9",
+                    "type": "text",
+                    "content": "Bring this up for:\n- analytics platforms\n- warehouses\n- BI dashboards\n- reporting\n- data pipelines\n\nKey distinction:\n\n> **OLTP models optimize application transactions. Fact/dimension models optimize analytical queries.**\n"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "6a957845-63e9-42c6-9cc3-94136c977631",
+        "type": "accordion",
+        "accordion": {
+          "id": "5a798994-2a9b-465d-bb76-49531530b16d",
+          "title": "Saga Pattern",
+          "children": [
+            {
+              "id": "3b1c330c-f4b1-44d3-bb8c-45d3974dcd34",
+              "type": "text",
+              "content": "# Saga Pattern\n\nA saga coordinates a business workflow across multiple independently transactional services.\n\nExample:\n\n```text\nCreate Order\n  ↓\nReserve Inventory\n  ↓\nCharge Payment\n  ↓\nCreate Shipment\n```\n\nEach service commits locally.\n\nIf a later step fails, earlier work is reversed using **compensating transactions**."
+            },
+            {
+              "id": "dbc6fc4c-b505-4353-bd01-03bc86718ea1",
+              "type": "accordion",
+              "accordion": {
+                "id": "a5a02b34-4e3d-43e7-8c42-6d8a553ed17a",
+                "title": "Why Use a Saga",
+                "children": [
+                  {
+                    "id": "7ebd73dd-4c29-403d-b07e-ef1d93d842c1",
+                    "type": "text",
+                    "content": "Suppose:\n\n```text\nOrder Service → Order DB\nInventory Service → Inventory DB\nPayment Service → Payment DB\n```\n\nA normal local transaction cannot atomically cover all databases.\n\nA saga accepts eventual consistency and coordinates the business workflow without holding one distributed database transaction open."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "9613faf9-0372-4e1f-8db5-3de9c1c64d24",
+              "type": "accordion",
+              "accordion": {
+                "id": "a20ea801-95d5-41d4-875d-9c57ff4941af",
+                "title": "Choreography",
+                "children": [
+                  {
+                    "id": "f0c33018-e8ca-4807-af3f-66ccaeee29c8",
+                    "type": "text",
+                    "content": "Services react to events.\n\n```text\nOrderCreated\n   ↓\nInventory reserves\n   ↓ InventoryReserved\nPayment charges\n   ↓ PaymentSucceeded\nShipping creates shipment\n```\n\nPros:\n- loose coupling\n- no central workflow service\n\nCons:\n- flow becomes difficult to see\n- debugging is harder\n- event chains may become tangled"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "d1d91fd2-e9ca-4399-867f-f1dfff1dd23a",
+              "type": "accordion",
+              "accordion": {
+                "id": "99f3ad53-03ae-4988-9f78-17da624d1156",
+                "title": "Orchestration",
+                "children": [
+                  {
+                    "id": "313fc617-3866-424d-a7b7-ce4b6a991e99",
+                    "type": "text",
+                    "content": "A central orchestrator controls the sequence.\n\n```text\nSaga Orchestrator\n ├→ Reserve Inventory\n ├→ Charge Payment\n └→ Create Shipment\n```\n\nPros:\n- explicit workflow\n- centralized retries/compensation\n\nCons:\n- orchestrator becomes critical\n- can accumulate business logic\n\nFor interview explanations, orchestration is often easier to reason about."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "cf25ac52-2c25-4fb0-8f8a-daebb7b6d643",
+              "type": "accordion",
+              "accordion": {
+                "id": "24629fdc-3ce6-4841-83b1-d4a1836f73ef",
+                "title": "Compensating Transactions",
+                "children": [
+                  {
+                    "id": "a2dca565-210c-443d-8638-0b81e8bcff44",
+                    "type": "text",
+                    "content": "Compensation is business-level reversal.\n\nExamples:\n\n```text\nreserve seat → release seat\ncharge card → refund card\nreserve inventory → restore inventory\n```\n\nNot every action is reversible.\n\nExamples:\n- email already sent\n- package already delivered\n- irreversible external side effect\n\nA correct saga design must account for these realities."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "32581cdc-eb1d-43cb-938a-9cfd4507ea69",
+              "type": "accordion",
+              "accordion": {
+                "id": "6e59ae3a-4c71-4a87-b259-05d9b463a849",
+                "title": "Reliability and Alternatives",
+                "children": [
+                  {
+                    "id": "79b67809-972c-43b6-ae64-5992210319ee",
+                    "type": "text",
+                    "content": "Saga steps should usually be:\n- idempotent\n- retryable\n- durably tracked\n- timeout-aware\n\nOften paired with:\n- message broker\n- transactional outbox\n- idempotency keys\n\nAlternatives:\n- one local DB transaction when possible\n- 2PC when strong distributed atomicity is truly required\n- simple eventual consistency for independent side effects\n\nUse the simplest option that meets correctness requirements."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "4dc76e39-1238-421d-918e-f61c102244d5",
+        "type": "accordion",
+        "accordion": {
+          "id": "315450b2-10e6-465c-b0dd-164743e96fc1",
+          "title": "Database Locking",
+          "children": [
+            {
+              "id": "e3a4610f-8ca8-4dc0-9444-9538653b3caf",
+              "type": "text",
+              "content": "# Database Locking\n\nLocking coordinates concurrent access to shared database state.\n\nExample problem:\n\n```text\nInventory = 1\n\nA reads 1\nB reads 1\nA buys\nB buys\n```\n\nWithout concurrency control, both may succeed.\n\nLocks are one way to prevent this."
+            },
+            {
+              "id": "000745b1-f05e-4b82-9734-1f3507507492",
+              "type": "accordion",
+              "accordion": {
+                "id": "93b23d22-334b-4370-8201-2854d4cb7f24",
+                "title": "Pessimistic Locking",
+                "children": [
+                  {
+                    "id": "e8389abb-a26c-4e02-8c3b-0ebd52035c46",
+                    "type": "text",
+                    "content": "Assume conflicts are likely and lock the row first.\n\n```sql\nSELECT *\nFROM inventory\nWHERE product_id = 123\nFOR UPDATE;\n```\n\nUse when:\n- contention is expected\n- conflicting updates are costly\n- correctness is critical\n\nTradeoffs:\n- blocking\n- reduced concurrency\n- deadlocks\n- long transactions are dangerous"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "a23d927b-8bcb-4c12-aa1e-8c258c86e1e9",
+              "type": "accordion",
+              "accordion": {
+                "id": "5863fc51-335f-4f4d-abc0-d5016cb063b4",
+                "title": "Optimistic Locking",
+                "children": [
+                  {
+                    "id": "76872325-3b71-4cb2-aefa-1d1fb629fb46",
+                    "type": "text",
+                    "content": "Assume conflicts are uncommon.\n\nStore:\n\n```text\nversion = 7\n```\n\nThen:\n\n```sql\nUPDATE item\nSET value = ?, version = 8\nWHERE id = ?\nAND version = 7;\n```\n\nIf zero rows update, someone else changed it first.\n\nPros:\n- no long-held lock\n- good concurrency\n\nCons:\n- retries under conflict\n- inefficient under heavy contention"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "96231f14-dcc9-42a6-8f93-880590370382",
+              "type": "accordion",
+              "accordion": {
+                "id": "9a270dde-0d94-41f8-a8bc-c4c5b0f6b7c4",
+                "title": "Lock Granularity and MVCC",
+                "children": [
+                  {
+                    "id": "8fb4388a-7163-498d-9692-195364610806",
+                    "type": "text",
+                    "content": "Possible lock scopes:\n- row\n- page\n- table\n\nFiner locks improve concurrency but increase lock-management overhead.\n\nModern relational databases often also use **MVCC**, allowing readers to see a consistent snapshot without blocking writers in many situations.\n\nDo not describe all concurrency control as simple mutex-style locking."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "260de269-b8e4-4f87-8e39-a6627524deb2",
+              "type": "accordion",
+              "accordion": {
+                "id": "fafc92db-178d-4076-9a09-ac578df5a285",
+                "title": "Deadlocks",
+                "children": [
+                  {
+                    "id": "d2fbc35e-a59f-4968-9e72-1454fed600f5",
+                    "type": "text",
+                    "content": "Example:\n\n```text\nA locks Row 1\nB locks Row 2\nA waits for Row 2\nB waits for Row 1\n```\n\nDatabases detect the deadlock and abort one transaction.\n\nMitigation:\n- consistent lock ordering\n- short transactions\n- retry aborted transactions\n- lock only what is necessary"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "79d0cc24-a546-422c-929d-22e98ddb6ff9",
+              "type": "accordion",
+              "accordion": {
+                "id": "09528f45-d813-48d8-be9c-2a24a360fb23",
+                "title": "Distributed Locks and Alternatives",
+                "children": [
+                  {
+                    "id": "c3502016-1a83-44c0-a162-1cee1ca056d2",
+                    "type": "text",
+                    "content": "Distributed lock systems may use:\n- Redis\n- ZooKeeper\n- etcd\n- database advisory locks\n\nThey introduce problems around:\n- leases\n- network partitions\n- stale holders\n- process pauses\n\nOften prefer:\n- unique constraints\n- atomic conditional writes\n- idempotency\n- partition ownership\n\nUse distributed locks only when the coordination requirement truly needs them."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "f2bebe2c-739f-434a-8ce8-72bded6aa70a",
+              "type": "accordion",
+              "accordion": {
+                "id": "6ac4f2e4-16bd-4c2f-be59-05ac017586b4",
+                "title": "Interview Guidance",
+                "children": [
+                  {
+                    "id": "4b52c1de-4376-48d1-848c-97eb6003f3ec",
+                    "type": "text",
+                    "content": "> \"For highly contended limited inventory, I may use a short pessimistic row lock or atomic conditional update. For low-contention concurrent editing, optimistic locking is usually better.\"\n\nAlways relate the choice to contention and correctness."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "305bc5c2-94ff-4c24-8baf-7a7d3e6f9ee8",
+        "type": "accordion",
+        "accordion": {
+          "id": "3af145ed-39a8-495d-8899-5c3e23b781b0",
+          "title": "Scaling Writes",
+          "children": [
+            {
+              "id": "7197d76c-2a05-4347-94a2-82ed54944d89",
+              "type": "text",
+              "content": "# Scaling Writes\n\nWrites are harder to scale than reads because they modify shared state and often require durability, ordering, replication, or coordination.\n\nA good interview approach is to scale writes **incrementally**, from simplest to most distributed."
+            },
+            {
+              "id": "88c41c62-0000-4d89-9756-f317d3cee47d",
+              "type": "accordion",
+              "accordion": {
+                "id": "8be3d026-8690-4d29-bf03-00483b45888e",
+                "title": "1. Optimize the Existing Primary",
+                "children": [
+                  {
+                    "id": "37c1091a-0ba3-4c61-8dcb-3207d6903f0e",
+                    "type": "text",
+                    "content": "Before architectural complexity:\n- fix inefficient queries\n- batch inserts\n- reduce unnecessary indexes\n- shorten transactions\n- tune connection pools\n- reduce lock contention\n- use faster storage\n- avoid unnecessary synchronous side effects\n\nThis is often enough for moderate systems."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "b7e0f2fa-a253-4d25-8246-66e136c9f0c6",
+              "type": "accordion",
+              "accordion": {
+                "id": "dfd6e982-a1c9-4a37-966d-fb548901afa8",
+                "title": "2. Vertical Scale",
+                "children": [
+                  {
+                    "id": "1fe7da1e-e74c-4873-be50-84bdaeabd304",
+                    "type": "text",
+                    "content": "Increase:\n- CPU\n- RAM\n- IOPS\n- disk throughput\n\nPros:\n- simplest\n- preserves transactional model\n\nCons:\n- finite ceiling\n- increasingly expensive\n- still one primary write path"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "b95ef52c-d04f-4287-8526-1ba219a06e29",
+              "type": "accordion",
+              "accordion": {
+                "id": "cdfa7257-15c6-4898-bf1e-9fd1bb4785bd",
+                "title": "3. Queue Non-Critical Writes",
+                "children": [
+                  {
+                    "id": "77aa1d1f-e7da-4ac3-8548-86bf73b422d3",
+                    "type": "text",
+                    "content": "```text\nRequest\n  ↓\nQueue\n  ↓\nWorkers\n  ↓\nDatabase\n```\n\nGood for:\n- analytics\n- emails\n- audit processing\n- search indexing\n- derived data\n\nPros:\n- absorbs bursts\n- smooths load\n- shortens request latency\n\nCons:\n- eventual consistency\n- backlog\n- retries and idempotency"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "adb25651-8f0d-48b4-857d-a41bb0e66982",
+              "type": "accordion",
+              "accordion": {
+                "id": "a4cb1dda-3691-414a-85f1-eddca6217a46",
+                "title": "4. Batch Writes",
+                "children": [
+                  {
+                    "id": "aed3be0f-d380-4fda-8348-8d312f844ca1",
+                    "type": "text",
+                    "content": "Combine many small writes into fewer larger operations.\n\nPros:\n- fewer network round trips\n- efficient sequential I/O\n- higher throughput\n\nCons:\n- added buffering latency\n- bigger retry units\n- memory usage"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "13074fbb-c210-4433-820f-793fd800d996",
+              "type": "accordion",
+              "accordion": {
+                "id": "fca0d58b-a69d-4c66-b7e6-5c25f3132a4b",
+                "title": "5. Shard the Write Workload",
+                "children": [
+                  {
+                    "id": "99f12a4b-bc4f-482b-8aa2-0637cf48c82a",
+                    "type": "text",
+                    "content": "Distribute ownership:\n\n```text\nhash(user_id)\n  ↓\nShard 1 / 2 / 3\n```\n\nPros:\n- multiple write leaders\n- greater storage capacity\n\nCons:\n- cross-shard transactions\n- hot shards\n- resharding\n- global uniqueness complexity\n\nUse when one primary is the fundamental throughput bottleneck."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "bd68ea3c-a291-498c-9392-a3e4c1df884f",
+              "type": "accordion",
+              "accordion": {
+                "id": "2bcec05f-7b80-47f7-8317-4fc6c67344f4",
+                "title": "6. Multi-Leader or Leaderless Systems",
+                "children": [
+                  {
+                    "id": "4a76bc01-8a67-4660-be71-e853101dfe6f",
+                    "type": "text",
+                    "content": "### Multi-leader\nMultiple regions/nodes accept writes.\n\nBenefits:\n- local write latency\n- availability\n\nCosts:\n- conflicts\n- replication complexity\n\n### Leaderless/quorum systems\nWrites go to multiple replicas and use quorum/reconciliation.\n\nBenefits:\n- high availability\n- distributed write capacity\n\nCosts:\n- conflict handling\n- tunable consistency complexity"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "6c95a022-e33c-4a66-8c3e-6f4ec43b0a97",
+              "type": "accordion",
+              "accordion": {
+                "id": "4b295d15-7304-4851-a54b-c0749d2851dc",
+                "title": "7. Specialized Stores",
+                "children": [
+                  {
+                    "id": "67447193-06e3-4627-bb62-8fe56ffa0c65",
+                    "type": "text",
+                    "content": "Do not force every workload into one database.\n\nExamples:\n- events → Kafka\n- metrics → time-series DB\n- sessions/cache → Redis\n- massive append-heavy data → Cassandra\n\nThis is **polyglot persistence**.\n\nTradeoff: every extra datastore increases operational complexity."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "01fd48a1-cd69-4ba6-9ce1-a245b0d52bf0",
+              "type": "accordion",
+              "accordion": {
+                "id": "ff3d5c53-ff40-41ab-a73a-3766fb52eccb",
+                "title": "Interview Guidance",
+                "children": [
+                  {
+                    "id": "f64ada4a-9a3d-4327-bae0-1820d44ac2d0",
+                    "type": "text",
+                    "content": "Strong sequence:\n\n```text\noptimize\n→ vertical scale\n→ batch / queue appropriate work\n→ shard only when needed\n```\n\nAvoid saying \"I would shard\" before establishing why the primary is actually write-bound."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "a35bba38-ceaf-4903-8d72-63e8e1ed0635",
+        "type": "accordion",
+        "accordion": {
+          "id": "1eb5d1c1-4954-48b2-a67c-006c65d81018",
+          "title": "Real-Time Updates",
+          "children": [
+            {
+              "id": "d22e6ee9-e22c-4f44-a511-1a99c102619a",
+              "type": "text",
+              "content": "# Real-Time Updates\n\nReal-time updates deliver changed state to clients quickly.\n\nExamples:\n- chat message\n- stock price\n- order status\n- game state\n- notification\n- collaborative edit\n- live metric\n\nFirst clarify:\n\n> **What latency is actually required, and is communication one-way or two-way?**"
+            },
+            {
+              "id": "89017506-7def-40bc-9f2d-73cc688394a1",
+              "type": "accordion",
+              "accordion": {
+                "id": "6b829378-48cc-4c71-861a-702857823c21",
+                "title": "Short Polling",
+                "children": [
+                  {
+                    "id": "2c90a599-c1af-43ab-9b34-1a3af277891c",
+                    "type": "text",
+                    "content": "Client repeatedly requests:\n\n```text\nGET /updates\n```\n\nUse when:\n- update frequency is low\n- several seconds of delay is acceptable\n- simplicity matters\n\nPros:\n- trivial implementation\n\nCons:\n- wasted requests\n- update delay\n- poor efficiency at scale"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "cc10c1c9-aa7d-4257-b12c-27ebf41c1bc4",
+              "type": "accordion",
+              "accordion": {
+                "id": "f5270a21-a5ce-439b-bc33-c12d773b4db4",
+                "title": "Long Polling",
+                "children": [
+                  {
+                    "id": "43614850-aed0-44b5-8cf3-dacd77b0eb6f",
+                    "type": "text",
+                    "content": "Server holds the HTTP request until an event or timeout.\n\nPros:\n- fewer empty responses\n- standard HTTP compatibility\n\nCons:\n- repeated reconnects\n- more overhead than a true stream\n- harder at very high frequency"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "51a2ea15-5bf8-48c7-acc4-85bec8b443f0",
+              "type": "accordion",
+              "accordion": {
+                "id": "ceff13b0-466e-477b-8eb0-52866ba99ae8",
+                "title": "Server-Sent Events",
+                "children": [
+                  {
+                    "id": "8a3ee39a-47a8-4f70-9cb1-3718ef897161",
+                    "type": "text",
+                    "content": "SSE keeps a one-way server → client HTTP stream.\n\nExcellent for:\n- AI response streaming\n- dashboards\n- notifications\n- job progress\n- price feeds\n\nPros:\n- simpler than WebSockets\n- HTTP-friendly\n- browser reconnection support\n\nCons:\n- not full bidirectional communication"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "9aa83ba6-4a82-4bf7-aa38-78d166482d4e",
+              "type": "accordion",
+              "accordion": {
+                "id": "5343b65c-b9e8-4743-bec3-e245bcfa2556",
+                "title": "WebSockets",
+                "children": [
+                  {
+                    "id": "e9f19f8d-8b7d-48de-85ee-0862b08c889a",
+                    "type": "text",
+                    "content": "Use for frequent two-way events:\n- chat\n- games\n- collaborative editing\n- presence\n\nCosts:\n- persistent connection state\n- reconnect handling\n- horizontal scaling complexity\n- pub/sub across gateway instances"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "a6afbcf6-70ae-4a88-a698-29d35d80d103",
+              "type": "accordion",
+              "accordion": {
+                "id": "87211803-5d27-435b-82d6-65967029c7b6",
+                "title": "Backend Event Distribution",
+                "children": [
+                  {
+                    "id": "2f41d012-8529-453d-9108-9b45d0d58cc7",
+                    "type": "text",
+                    "content": "Real-time client transport does not solve backend fan-out.\n\nTypical architecture:\n\n```text\nBusiness Service\n   ↓ event\nPub/Sub\n   ↓\nRealtime Gateway Fleet\n   ↓\nConnected Clients\n```\n\nThe broker lets an event reach the server that currently owns the recipient's connection."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "afb62a5c-3caa-492d-8697-6fd03bd46953",
+              "type": "accordion",
+              "accordion": {
+                "id": "746b7299-75a2-4f61-aafd-2165ed5368ac",
+                "title": "Ordering, Duplicates, and Recovery",
+                "children": [
+                  {
+                    "id": "b50e86cb-9274-47af-a092-4b88a9be8c5e",
+                    "type": "text",
+                    "content": "Questions to answer:\n- can updates arrive out of order?\n- can duplicates occur?\n- can events be lost?\n- what happens after reconnect?\n\nPossible tools:\n- event IDs\n- sequence numbers\n- deduplication\n- durable log\n- replay from offset\n- refetch canonical state through REST\n\nExample reconnect protocol:\n\n```text\nClient: last_seen_sequence = 1042\nServer: replay 1043+\n```\n\nor simply refetch the current state if replay is unnecessary."
+                  }
+                ]
+              }
+            },
+            {
+              "id": "e43cfd41-6f07-4a8b-ae08-81fcccc4009d",
+              "type": "accordion",
+              "accordion": {
+                "id": "1e9e07af-3fa2-42d5-869f-c5d75843f815",
+                "title": "Interview Guidance",
+                "children": [
+                  {
+                    "id": "aabb795a-21b0-4b0a-9cf7-fffacef4c846",
+                    "type": "text",
+                    "content": "Selection rule:\n\n```text\nlow frequency → polling\none-way stream → SSE\nfrequent two-way → WebSockets\n```\n\nThen explain backend distribution and recovery.\n\nStrong answer:\n\n> \"For chat I would use WebSockets for active bidirectional delivery, pub/sub between realtime gateways, and durable message storage so reconnecting clients can recover anything they missed.\"\n"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
   },
   {
     "id": "b34539fe-c89f-494c-96dc-d106a8ed84c7",
