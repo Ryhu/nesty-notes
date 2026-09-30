@@ -729,18 +729,1232 @@
         "accordion": {
           "id": "856bed0d-219a-40bd-9be2-75fea43a226d",
           "title": "Design Patterns",
+          "children": []
+        }
+      },
+      {
+        "id": "e8ecc35f-ee48-4321-a94d-f4ab1574a0a6",
+        "type": "accordion",
+        "accordion": {
+          "id": "689e5757-47b1-4194-87e5-c653ed8e658c",
+          "title": "AI Data Pipeline",
           "children": [
             {
-              "id": "f81c8ce6-7ee7-481b-b125-001b84e973ee",
+              "id": "840c032b-5896-4349-ac6a-51596ff2ff88",
               "type": "accordion",
               "accordion": {
-                "id": "d240cd52-98b6-40b6-bdaa-8325c78e6132",
-                "title": "AI Data Pipeline",
+                "id": "6ff62c5e-87db-4021-a624-d5676f0b3b9d",
+                "title": "1. Data Pipeline Overview",
                 "children": [
                   {
-                    "id": "08bfcaf6-ac90-42ae-b245-2cd002e6e543",
+                    "id": "4680f5c0-abfe-4b47-9c4a-da40d3d1e59d",
                     "type": "text",
-                    "content": "```\nDATA SOURCES\n     ↓\nINGESTION\n     ↓\nTRANSPORT / BUFFER\n     ↓\nPROCESSING / TRANSFORMATION\n     ↓\nSTORAGE\n     ↓\nSERVING / QUERY\n     ↓\nCONSUMERS\n```"
+                    "content": "# What a data pipeline is\n\nA **data pipeline** is the set of systems that moves data from one or more **sources** to one or more **consumers**, usually while validating, buffering, transforming, storing, and serving that data along the way.\n\nFor a mid-level system design interview, the most useful mental model is:\n\n**Sources → Ingestion → Transport/Buffering → Processing → Storage → Serving → Consumers**\n\nAcross every stage, also reason about **reliability, scalability, data quality, observability, security, cost, and operational complexity**.\n\nA strong interview answer does not add every possible component. Start with the simplest pipeline that satisfies the requirements, then add components only when a requirement or bottleneck justifies them."
+                  },
+                  {
+                    "id": "858362fa-4273-4cc9-8f5f-88b866d35993",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "df7dcf78-fef2-4be9-a2d4-ad148c8d8cbd",
+                      "title": "When a pipeline is needed",
+                      "children": [
+                        {
+                          "id": "4859d5c6-645f-4cce-bb59-50a59cd79a1b",
+                          "type": "text",
+                          "content": "A distinct pipeline becomes useful when data must be processed independently from the synchronous request path.\n\nCommon triggers include:\n\n- Analytics or event tracking\n- Log aggregation\n- Search indexing\n- Recommendation systems\n- Fraud detection\n- ML training data\n- Data warehouse loading\n- ETL/ELT workflows\n- Replicating data between systems\n- Processing uploads such as images, documents, audio, or video\n- Fan-out to multiple downstream consumers\n\nYou usually **do not need a dedicated pipeline** for a small CRUD application where the request can synchronously write to one database and immediately return."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "edc5d2ca-2d1d-4eef-84d7-8653c5875def",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "68a3596a-47c4-4860-a1e8-aa7c4715c723",
+                      "title": "Interview decision framework",
+                      "children": [
+                        {
+                          "id": "a3f57ecd-21f4-4ebf-9dac-3cf7c9147249",
+                          "type": "text",
+                          "content": "For each stage, ask five questions:\n\n1. **Why is this stage needed?**\n2. **What requirement does it satisfy?**\n3. **What is the simplest implementation?**\n4. **What breaks at higher scale or during failures?**\n5. **What alternative would you choose under different constraints?**\n\nThis keeps the design requirement-driven instead of technology-driven."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "a7c9220c-4660-41b6-85c4-050cd0e98ad9",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "25b36f88-7e58-4f86-aa89-eb14f7d75d34",
+                      "title": "Batch vs streaming",
+                      "children": [
+                        {
+                          "id": "363f475b-fc66-453e-988c-ac60ad962a30",
+                          "type": "text",
+                          "content": "## Batch\n\nProcesses a group of records periodically, such as every hour or every night.\n\nUse batch when:\n- Freshness can be minutes or hours\n- Processing large historical datasets\n- Throughput matters more than per-event latency\n- Simpler operational behavior is desirable\n\nAdvantages:\n- Simpler to reason about\n- Efficient for large scans and aggregations\n- Easier retries because a batch can be rerun\n\nTradeoffs:\n- Higher data freshness latency\n- Large jobs can create load spikes\n- Failed batches may delay an entire reporting period\n\nTypical technologies: scheduled SQL jobs, Spark, dbt, Airflow-orchestrated jobs.\n\n## Streaming\n\nProcesses records continuously or near-real-time.\n\nUse streaming when:\n- Seconds or milliseconds matter\n- Fraud detection, alerts, recommendations, live dashboards, or telemetry require fresh data\n- Events arrive continuously at high volume\n\nAdvantages:\n- Low latency\n- Continuous processing\n- Can react immediately to events\n\nTradeoffs:\n- More operational complexity\n- Ordering, duplicate delivery, checkpointing, replay, and state management become important\n- Debugging can be harder\n\nTypical technologies: Kafka, Kinesis, Pub/Sub, Flink, Kafka Streams, Spark Structured Streaming."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "149b1810-aad8-4ed6-bdc5-b835c500f489",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "9e6e0366-f620-45f6-9836-a3aea42b1590",
+                      "title": "ETL vs ELT",
+                      "children": [
+                        {
+                          "id": "6af753ed-00ae-4831-9443-0ca8c5ea1f52",
+                          "type": "text",
+                          "content": "## ETL: Extract → Transform → Load\n\nData is transformed before being written into the final analytical store.\n\nUseful when:\n- The destination expects clean, modeled data\n- Sensitive fields must be removed before loading\n- Destination compute is limited\n\nTradeoff: transformation infrastructure must scale independently.\n\n## ELT: Extract → Load → Transform\n\nRaw or lightly processed data is loaded first, then transformed inside a warehouse/lakehouse.\n\nUseful when:\n- Warehouse compute is powerful\n- You want raw history for reprocessing\n- Analysts need flexibility to derive new models later\n\nTradeoff: raw data governance and storage discipline become more important.\n\nFor modern analytics systems, ELT is common because warehouses such as Snowflake, BigQuery, and Redshift can perform large transformations directly."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "2e831d50-12a8-4b07-9f38-1ac397660793",
+              "type": "accordion",
+              "accordion": {
+                "id": "9f5972cd-872f-4f25-b1a5-a68f99d79f93",
+                "title": "2. Data Sources",
+                "children": [
+                  {
+                    "id": "3e994b79-e3db-4058-8d59-d51b18b58626",
+                    "type": "text",
+                    "content": "The **source** is where data originates. Identify source type, schema, volume, velocity, ownership, and whether changes can be pushed or must be polled.\n\nIn interviews, this stage matters because the source determines the ingestion strategy. A database change stream should not be handled the same way as browser click events or nightly vendor files."
+                  },
+                  {
+                    "id": "bca41d55-7bc5-4dc8-8674-5492f05d1a3b",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "61fc810c-2a3a-48d0-a925-26c67c99da4e",
+                      "title": "Application events",
+                      "children": [
+                        {
+                          "id": "d4d102e2-b323-49de-bba4-967cf78b1668",
+                          "type": "text",
+                          "content": "Applications can emit domain or analytics events such as `OrderCreated`, `PaymentSucceeded`, or `PageViewed`.\n\nImplementation options:\n- Application directly publishes to a broker\n- Application sends events to an event collector service\n- Transactional outbox writes the business row and event record in one database transaction, then another process publishes the event\n\nThe **transactional outbox** is especially valuable when losing an event would be unacceptable. It avoids the dual-write problem where the database commit succeeds but broker publication fails, or vice versa.\n\nTradeoff: the outbox adds another table, publisher process, and eventual-delivery behavior."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "b5f00c03-bc74-4403-96a3-faf91e16a8cd",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "90c1f9e7-f5d3-4aef-a9cf-e937411d5fb9",
+                      "title": "Operational databases",
+                      "children": [
+                        {
+                          "id": "af5ec4ec-613a-4a8a-9671-9f040f48201a",
+                          "type": "text",
+                          "content": "A relational or NoSQL database can itself be a pipeline source.\n\nCommon approaches:\n- Periodic queries using timestamps or increasing IDs\n- Change Data Capture (CDC)\n- Database replication logs\n\nPolling is simple but may miss rapid changes, create repeated database load, and increase latency.\n\nCDC reads the database's change log and emits inserts, updates, and deletes. It is commonly used to feed warehouses, search indexes, caches, or downstream services.\n\nExamples: Debezium, AWS Database Migration Service, database-native replication/change streams."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "90d5a2ec-b511-47bc-98de-41f22e4c443e",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "3e19c170-9ff3-4a6b-a6c5-c02279379f3a",
+                      "title": "Logs and telemetry",
+                      "children": [
+                        {
+                          "id": "3b82087d-3953-48cd-a1b2-dd7ca71e60b2",
+                          "type": "text",
+                          "content": "Sources include application logs, infrastructure logs, metrics, traces, and audit events.\n\nTypical collection technologies:\n- Fluent Bit / Fluentd\n- Logstash\n- OpenTelemetry Collector\n- Cloud-native logging agents\n\nThese collectors batch, buffer, enrich, and forward data to destinations such as Elasticsearch/OpenSearch, object storage, or observability platforms.\n\nIn an interview, distinguish **logs** from **metrics** and **traces** because they have different data shapes and query patterns."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "26c87ef2-585e-4b59-a214-a0ae1241c702",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "f855c93b-4d2d-4071-aee2-8eaf233bd478",
+                      "title": "Files and object storage",
+                      "children": [
+                        {
+                          "id": "b462cd5a-2a21-4241-8233-b48600ab52b1",
+                          "type": "text",
+                          "content": "Files may arrive through user uploads, partner feeds, scheduled exports, or object-store drops.\n\nTypical formats:\n- CSV\n- JSON / JSON Lines\n- Parquet\n- Avro\n\nFor analytical workloads, columnar formats such as **Parquet** are preferred because they reduce scan volume and support compression and predicate pushdown.\n\nFor event transport and schema evolution, **Avro** or **Protobuf** can be attractive because they are compact and schema-aware."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "bd571ce6-5178-4101-b4da-0e51cf31dded",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "4f65ad59-e642-404d-84ff-7fd676081a57",
+                      "title": "Third-party APIs",
+                      "children": [
+                        {
+                          "id": "1ac41787-c031-459f-bb97-18b28034f5bb",
+                          "type": "text",
+                          "content": "External APIs often require pull-based ingestion.\n\nImportant concerns:\n- Rate limits\n- Authentication and token rotation\n- Pagination\n- Incremental sync cursors\n- Retries and exponential backoff\n- Vendor outages\n- Deduplication\n- Late or corrected data\n\nFor a mid-level interview, mention that the ingestion worker should persist its cursor/checkpoint so a restart resumes safely instead of re-reading the entire source."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "0581649b-3e74-4349-b948-fb2ba0791385",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "983625f7-cf4f-4ff1-9681-cd000a152668",
+                      "title": "IoT and device telemetry",
+                      "children": [
+                        {
+                          "id": "ad424add-c6b8-43bb-9c86-cb4d8ba90e9f",
+                          "type": "text",
+                          "content": "Devices may produce high-volume, intermittent, or bandwidth-constrained event streams.\n\nCommon protocols/components:\n- MQTT brokers\n- HTTP ingestion endpoints\n- Kafka or cloud IoT gateways downstream\n\nImportant concerns include device authentication, intermittent connectivity, event timestamps versus arrival timestamps, duplicate delivery, and burst buffering."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "0eefdb4b-d9a9-4924-bc47-894350451b9d",
+              "type": "accordion",
+              "accordion": {
+                "id": "af76b590-f090-4e4b-85fd-733965f7c29a",
+                "title": "3. Ingestion",
+                "children": [
+                  {
+                    "id": "aaa6e9b6-e196-4f11-9dc6-d5245f5ae5df",
+                    "type": "text",
+                    "content": "The **ingestion layer** accepts data from producers and normalizes the boundary between producers and the internal pipeline.\n\nA strong ingestion design protects downstream systems from malformed input, traffic bursts, abusive clients, and producer-specific behavior."
+                  },
+                  {
+                    "id": "f16baec0-40f4-4378-92b5-97000e163d3f",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "ebc58654-1302-46cd-b376-68250c894036",
+                      "title": "Direct API ingestion",
+                      "children": [
+                        {
+                          "id": "e883052d-3c0d-418f-b4a3-bc3a8edd223e",
+                          "type": "text",
+                          "content": "A dedicated HTTP/gRPC ingestion service receives events and validates them before forwarding them downstream.\n\nTypical responsibilities:\n- Authentication\n- Rate limiting\n- Schema validation\n- Request size limits\n- Timestamp normalization\n- Generating event IDs\n- Batching\n- Returning acknowledgments\n\nUse it when producers should not know broker details or when public clients cannot safely connect directly to internal messaging infrastructure.\n\nTradeoff: adds a network hop and another service to operate."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "b7c082a9-accc-441c-b5c6-c35d55d1aa9c",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "c17898f0-6f20-4702-8984-400a712f76b5",
+                      "title": "Direct producer-to-broker",
+                      "children": [
+                        {
+                          "id": "3594581c-a399-4cc7-af72-07de08562eb2",
+                          "type": "text",
+                          "content": "Trusted backend services can publish directly to Kafka, Kinesis, Pub/Sub, RabbitMQ, or another broker.\n\nAdvantages:\n- Fewer hops\n- Lower ingestion-service cost\n- High throughput\n\nTradeoffs:\n- Producers become coupled to broker libraries and schemas\n- Credential management is broader\n- Harder to enforce a single validation boundary\n\nThis is common for internal services but less appropriate for browsers or untrusted mobile clients."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "0e40734f-5ec3-49ab-b211-87750054e149",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "740e397f-3918-4584-bdaa-584c97a991b7",
+                      "title": "Change Data Capture (CDC)",
+                      "children": [
+                        {
+                          "id": "ebcebced-633f-4ba9-949e-9b456204af12",
+                          "type": "text",
+                          "content": "CDC converts database changes into an event stream by reading transaction logs or native change streams.\n\nTypical flow:\n\n**Primary DB → CDC connector → Kafka/topic → consumers**\n\nUse CDC when:\n- You need reliable replication of row-level changes\n- Existing applications were not built to publish domain events\n- Search indexes or warehouses must stay synchronized\n\nAdvantages:\n- Minimal changes to application code\n- Captures inserts, updates, and deletes\n- Can preserve ordered database change history\n\nTradeoffs:\n- Events reflect storage-level changes rather than clean domain semantics\n- Schema changes must be handled carefully\n- Connector lag and replication-log retention matter\n\nCommon technology: Debezium."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "21f1777c-9e41-4717-92b4-84497738a3ae",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "a9d1405a-7df2-40f4-9997-2dcb4df3463f",
+                      "title": "Transactional outbox",
+                      "children": [
+                        {
+                          "id": "2b084c1c-d3f8-4570-9423-920e9261a33e",
+                          "type": "text",
+                          "content": "The transactional outbox solves the **dual-write problem**.\n\nInstead of:\n\n1. Write order to PostgreSQL\n2. Publish `OrderCreated` to Kafka\n\nwhich can fail between steps, write both the order and an outbox record in the same database transaction. A publisher later sends unsent outbox rows to the broker.\n\nAdvantages:\n- Strong coupling between business commit and event existence\n- Greatly reduces lost events\n\nTradeoffs:\n- Publication is eventually consistent\n- Requires cleanup and idempotent publication\n- Additional table and worker/CDC process\n\nFor interview purposes, it is a strong answer whenever an event must correspond reliably to a database transaction."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "3ca3794f-6080-43ca-a636-0579a95dc095",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "65e0ed85-1aa3-4198-9c09-3baa0740eee6",
+                      "title": "Schema validation and contracts",
+                      "children": [
+                        {
+                          "id": "88957689-a84c-41fa-bbb9-9a9b7eeb3111",
+                          "type": "text",
+                          "content": "Validation should occur as early as practical.\n\nCommon strategies:\n- JSON Schema\n- Avro schema registry\n- Protobuf definitions\n- Application-level validation\n\nA schema registry is useful when many producers and consumers share event definitions. Compatibility rules can prevent breaking changes.\n\nTradeoff: governance improves safety but slows ad hoc schema changes.\n\nFor most small systems, application validation may be sufficient. A schema registry becomes more valuable as the number of teams and event types grows."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "e5cef169-91bf-4b19-bdf6-fda620b338bc",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "226ce0b9-1e3e-472e-b4d9-66402bd7d9e6",
+                      "title": "Rate limiting and admission control",
+                      "children": [
+                        {
+                          "id": "1a369cc8-d70d-44d2-85d8-790e5dae5665",
+                          "type": "text",
+                          "content": "Ingestion systems should protect downstream capacity.\n\nOptions:\n- Per-client token bucket or leaky bucket limits\n- Request quotas\n- Maximum batch sizes\n- Broker-side quotas\n- Backpressure or `429 Too Many Requests`\n\nRate limiting is especially important for public ingestion APIs. Internal pipelines may instead rely more on broker buffering and producer quotas."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "1f825c57-6bc7-48fb-b754-96deef99aa56",
+              "type": "accordion",
+              "accordion": {
+                "id": "319ab512-2745-4a80-ab78-380564d4309f",
+                "title": "4. Transport, Queues, and Event Streams",
+                "children": [
+                  {
+                    "id": "1aa5565a-c6f3-46c8-8e43-7aac58f094bb",
+                    "type": "text",
+                    "content": "The transport layer decouples producers from consumers and often acts as a **durable buffer**.\n\nThis stage is not mandatory. A small system can write directly from an API to a database. Add a broker when asynchronous work, traffic bursts, replay, fan-out, or independent consumer scaling justify it."
+                  },
+                  {
+                    "id": "64362525-8ca1-4f62-98cd-20fc9e7d4a21",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "693c514b-4906-4c28-830e-981e806599b7",
+                      "title": "Message queue vs event stream",
+                      "children": [
+                        {
+                          "id": "3451e4cf-37b0-4656-92b4-b2e3b5308347",
+                          "type": "text",
+                          "content": "## Queue\n\nA queue is optimized for distributing work. A message is typically processed by one worker from a consumer group.\n\nGood for:\n- Email jobs\n- Image processing\n- Background tasks\n- Payment follow-up\n\nExamples: SQS, RabbitMQ.\n\n## Event stream / log\n\nA stream keeps an ordered sequence of events for a retention period. Multiple independent consumer groups can read the same events.\n\nGood for:\n- Analytics\n- CDC\n- Event-driven architectures\n- Replayable processing\n- Multiple downstream consumers\n\nExamples: Kafka, Kinesis, Pub/Sub-style systems.\n\nThe distinction is conceptual; modern products often overlap."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "775f62d6-4fab-4108-a805-fb5495b3adec",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "5c1b5157-18fd-45c0-a981-082a5de0ad77",
+                      "title": "Kafka",
+                      "children": [
+                        {
+                          "id": "381adca5-d46c-4f53-8ffa-17a7d37dd69b",
+                          "type": "text",
+                          "content": "Kafka is a distributed append-only log organized into **topics** and **partitions**.\n\nKey ideas:\n- A topic is a logical event stream\n- Partitions provide parallelism and ordering boundaries\n- Producers choose partitions, often by hashing a key such as `user_id`\n- Consumers in the same consumer group divide partitions among themselves\n- Different consumer groups can independently read the same topic\n- Offsets track consumer progress\n\nUse Kafka when:\n- High throughput is required\n- Replay is valuable\n- Multiple independent consumers need the same events\n- Ordering by key matters\n- Retained event history is useful\n\nTradeoffs:\n- More operational complexity than a simple queue\n- Partition strategy matters\n- Rebalancing and lag must be monitored\n- Strict global ordering is expensive because ordering is per partition\n\nAlternatives: Kinesis, Google Pub/Sub, Pulsar, RabbitMQ, SQS depending on semantics and operational preferences."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "744efea9-2a21-40be-a477-8eb738aed81c",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "9506e2c2-c5eb-4d16-928d-abfbda5cc0df",
+                      "title": "SQS and managed queues",
+                      "children": [
+                        {
+                          "id": "a9138f7c-ec30-46c9-8f2a-43a647433f52",
+                          "type": "text",
+                          "content": "Managed queues such as Amazon SQS are attractive when you want asynchronous work distribution without operating broker infrastructure.\n\nUse for:\n- Background jobs\n- Task distribution\n- Work that does not require replayable history\n\nAdvantages:\n- Low operational overhead\n- Built-in durability and scaling\n- Dead-letter queues and visibility timeouts\n\nTradeoffs:\n- Different ordering/throughput characteristics depending on queue type\n- Less natural for many independent subscribers to replay the same history\n\nFor many mid-level interview systems, a managed queue is the simplest good answer for background jobs."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "41389307-1469-4302-82f9-b43624db0853",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "c3ba7c63-4076-4716-948d-c607e5262b7a",
+                      "title": "RabbitMQ",
+                      "children": [
+                        {
+                          "id": "70e1a72c-5943-43bc-8de0-345e15ac83c5",
+                          "type": "text",
+                          "content": "RabbitMQ is a message broker with exchanges, queues, and routing keys.\n\nStrengths:\n- Flexible message routing\n- Work queues\n- Acknowledgments\n- Mature messaging semantics\n\nUse when routing patterns and traditional queue semantics matter more than long-term replayable logs.\n\nCompared with Kafka, RabbitMQ is generally more queue-oriented while Kafka is log/stream-oriented."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "395b9bac-1025-4d5b-a967-2442f9fa3b59",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "14a315c2-177a-4786-98c3-a762a3691a66",
+                      "title": "Partitioning",
+                      "children": [
+                        {
+                          "id": "64bd6d23-4ec6-4ef0-bf51-164a8243e73a",
+                          "type": "text",
+                          "content": "Partitioning increases parallelism.\n\nA common strategy is hashing a stable key:\n\n`partition = hash(user_id) % N`\n\nThis keeps events for the same user on the same partition and therefore preserves their relative order.\n\nTradeoffs:\n- Hot keys can overload one partition\n- Increasing partition count can change key distribution\n- More partitions increase broker and consumer overhead\n\nInterview rule: choose a partition key that aligns with the ordering requirement and distributes load reasonably evenly."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "0e05e7e8-6035-4bb6-bb22-86d72f644307",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "f3871fe4-3036-47ca-9449-dbbebc59be90",
+                      "title": "Ordering",
+                      "children": [
+                        {
+                          "id": "6f7c7fa1-334f-4b7d-b429-0dca63c0fea3",
+                          "type": "text",
+                          "content": "Perfect global ordering is expensive and often unnecessary.\n\nUsually define the smallest ordering scope that matters:\n- Per user\n- Per account\n- Per order\n- Per device\n\nKafka provides ordering within a partition, not across all partitions.\n\nIf events can arrive out of order, consumers can use sequence numbers, versions, event timestamps, or state checks to reject stale updates."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "da32d66f-0608-454d-8712-722c5717a50c",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "75008bc9-ce1e-4002-8690-0de419f2dafb",
+                      "title": "Delivery semantics",
+                      "children": [
+                        {
+                          "id": "9467548c-3a3d-4e3e-88e7-f40be0a0a0e9",
+                          "type": "text",
+                          "content": "Common delivery models:\n\n### At-most-once\nA record may be lost but is not intentionally retried.\n\n### At-least-once\nRecords are retried until acknowledged, so duplicates are possible.\n\n### Exactly-once effect\nThe system ensures the resulting state is not applied twice, often through idempotency, transactions, deduplication, or framework support.\n\nIn interviews, **at-least-once + idempotent consumers** is often the practical default.\n\nBe cautious about casually promising exactly-once delivery across multiple distributed systems; end-to-end exactly-once semantics are difficult and often unnecessary."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "bf056e12-ebc1-475b-9c84-5dbb8a68f472",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "f413a9cb-4c92-407d-94fa-e117437dfcf4",
+                      "title": "Backpressure",
+                      "children": [
+                        {
+                          "id": "1a25c6b9-2e4b-4333-b709-f7374697c7f4",
+                          "type": "text",
+                          "content": "Backpressure occurs when producers generate work faster than consumers can process it.\n\nWays to handle it:\n- Durable broker buffering\n- Scale consumer workers horizontally\n- Producer throttling\n- Drop low-value events when allowed\n- Batch records\n- Apply quotas\n- Use autoscaling based on queue depth or consumer lag\n\nMonitor queue depth, oldest-message age, and stream lag because these indicate whether the pipeline is falling behind."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "f5923f3d-cce1-4ce2-83b4-0916656f8cbe",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "2a33e7b6-29b5-43a3-aa32-7008bec31ab4",
+                      "title": "Dead-letter queues",
+                      "children": [
+                        {
+                          "id": "75b1a1c2-e23c-4948-b84c-f6a14f00bdc7",
+                          "type": "text",
+                          "content": "A Dead-Letter Queue (DLQ) stores records that repeatedly fail processing.\n\nUse it when one poison message should not block the rest of the pipeline.\n\nTypical policy:\n1. Attempt processing\n2. Retry transient failures with backoff\n3. After a maximum retry count, move the record to a DLQ\n4. Alert operators\n5. Investigate, fix, and optionally replay\n\nTradeoff: a DLQ prevents blocking but can hide failures if nobody monitors it."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "5d623367-2ca1-4f86-b6ff-e1e9c994f362",
+              "type": "accordion",
+              "accordion": {
+                "id": "0e86ee21-492b-411e-a130-c4cb6887c212",
+                "title": "5. Processing and Transformation",
+                "children": [
+                  {
+                    "id": "60966a00-48b2-4b26-b4f2-3bf24e314203",
+                    "type": "text",
+                    "content": "Processing converts raw inputs into useful data. It may be stateless or stateful, synchronous or asynchronous, batch or streaming.\n\nTypical operations include validation, filtering, enrichment, aggregation, joining, deduplication, anonymization, feature generation, and model inference."
+                  },
+                  {
+                    "id": "f8e40304-8687-4c44-9bd8-119f103ae3e7",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "a623bfd1-1a8c-4ee2-98bd-1bdc41d97d9d",
+                      "title": "Stateless processing",
+                      "children": [
+                        {
+                          "id": "5c1c4a7b-ed2f-4bf0-9de1-a9bbbe4e0d6b",
+                          "type": "text",
+                          "content": "A stateless processor handles each record independently.\n\nExamples:\n- Validate fields\n- Rename keys\n- Convert units\n- Remove PII\n- Add a derived field\n\nAdvantages:\n- Easy horizontal scaling\n- Easy retry behavior\n- Minimal coordination\n\nFor interview designs, prefer stateless workers whenever the requirement allows it."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "1ab6ad78-f507-4b71-941e-205415f010ff",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "2f1f1841-1561-4359-8838-906663555546",
+                      "title": "Stateful stream processing",
+                      "children": [
+                        {
+                          "id": "39337058-70a9-4bbb-80e4-0a8d8802b71c",
+                          "type": "text",
+                          "content": "Stateful processing remembers information across events.\n\nExamples:\n- Count purchases per user over 5 minutes\n- Detect repeated failed login attempts\n- Join click events with user metadata\n- Maintain session state\n\nImportant concepts:\n- Windowing\n- Checkpointing\n- State stores\n- Event-time processing\n- Late events\n- Watermarks\n\nTypical technologies: Flink, Kafka Streams, Spark Structured Streaming.\n\nTradeoff: state improves capability but increases recovery, scaling, and correctness complexity."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "a7a211d1-4a4f-41d9-bdba-44149447d04a",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "455e3dac-d4bd-40be-bee8-a8b38ec538b2",
+                      "title": "Windowing",
+                      "children": [
+                        {
+                          "id": "a3d4b124-f726-457c-bb3e-d2f7be079e48",
+                          "type": "text",
+                          "content": "Streaming aggregations often need a bounded time range.\n\nCommon window types:\n- **Tumbling window:** fixed non-overlapping windows, such as every 1 minute\n- **Sliding window:** overlapping range, such as the last 5 minutes recalculated every minute\n- **Session window:** groups events separated by inactivity gaps\n\nUse windows when computing rates, rolling metrics, fraud rules, or time-based aggregates.\n\nMention event time vs processing time when late or delayed events matter."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "773af5ed-6542-454d-ac00-bcae435f73d0",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "10582794-fa4b-43af-b242-036ae8d1754f",
+                      "title": "Event time, processing time, and watermarks",
+                      "children": [
+                        {
+                          "id": "637b5f92-3502-40fb-97b1-4215bdd00e00",
+                          "type": "text",
+                          "content": "**Event time** is when the event actually happened. **Processing time** is when the pipeline processed it.\n\nNetwork delays can cause late events, so streaming systems often use **watermarks** to estimate when most events for a time range have arrived.\n\nTradeoff:\n- Waiting longer improves completeness\n- Waiting less reduces latency\n\nThis is a strong deep-dive topic for real-time analytics interviews."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "23037c36-cb5b-45f3-9505-7905c9c116aa",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "91651b86-c65e-4425-b82e-cb7a226e2af3",
+                      "title": "Deduplication and idempotency",
+                      "children": [
+                        {
+                          "id": "983080fa-65a2-49d5-b74f-75de225c0a00",
+                          "type": "text",
+                          "content": "At-least-once delivery means duplicate records are normal.\n\nCommon techniques:\n- Unique event IDs\n- Database unique constraints\n- Idempotency keys\n- Consumer-side dedupe tables\n- Upserts based on natural keys/version numbers\n\nExample: `event_id` has a unique index. If the consumer retries the event, the duplicate insert fails harmlessly or becomes an upsert.\n\nFor high-volume streams, storing every processed ID forever is expensive, so dedupe state may use bounded retention or application-specific versioning."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "f223780d-db9a-4812-afd2-7564ad9df814",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "68bbc9eb-6a05-4234-ab45-1b25fb2123bd",
+                      "title": "Batch processing with Spark",
+                      "children": [
+                        {
+                          "id": "522dd12c-f739-4b34-81ec-2261130b5655",
+                          "type": "text",
+                          "content": "Apache Spark is commonly used for distributed batch processing and can also support streaming workloads.\n\nUse when:\n- Dataset exceeds one machine's practical capacity\n- Large joins or aggregations are required\n- Parallel processing across many files is useful\n\nStrengths:\n- Mature ecosystem\n- Distributed execution\n- Strong support for SQL/DataFrame workloads\n\nTradeoffs:\n- Cluster/runtime complexity\n- Startup overhead can be unnecessary for small jobs\n\nAlternatives: warehouse SQL, dbt, Flink, Beam, custom workers, managed ETL services."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "3839198a-cb08-4273-873f-aaf5b411ccb5",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "41f0e9e5-c4c3-4d46-b086-7f9a07181254",
+                      "title": "Stream processing with Flink",
+                      "children": [
+                        {
+                          "id": "e232c2aa-a1a3-4ce6-b29b-af0696b46f05",
+                          "type": "text",
+                          "content": "Apache Flink is designed for low-latency stateful stream processing.\n\nUse when:\n- Stateful event-time computations matter\n- Complex windows and joins are required\n- Low-latency continuous processing is central\n\nStrengths:\n- Stateful processing\n- Checkpointing\n- Event-time semantics\n\nTradeoffs:\n- Operational and conceptual complexity\n- Often excessive for simple background jobs\n\nFor most mid-level interview questions, mention Flink only when streaming requirements justify it; do not add it by default."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "099511f1-fd1a-4b0b-aabb-f4be887c1d5d",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "ba2e34e1-9af7-4a97-a967-4481d5004739",
+                      "title": "Enrichment",
+                      "children": [
+                        {
+                          "id": "07cc0b91-7c9c-4b21-bcc0-cfa57a17b6f7",
+                          "type": "text",
+                          "content": "Enrichment adds information from another source.\n\nExample:\n`product_id=42` becomes an event containing product category, merchant, or price band.\n\nImplementation options:\n- Query a database for each event\n- Use a local/in-memory cache\n- Replicate reference data into a state store\n- Stream-table join\n\nPer-event database lookups are simple but can create enormous load and latency. Caching or locally replicated reference data is better for high-throughput streams."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "9f68a057-a45a-4e5f-8334-b7e6ba09c82d",
+              "type": "accordion",
+              "accordion": {
+                "id": "9c4e816a-c4eb-4529-9de1-f45a0a7ff501",
+                "title": "6. Storage",
+                "children": [
+                  {
+                    "id": "7c2d5dc4-70a0-4af9-8506-b6f03b375db3",
+                    "type": "text",
+                    "content": "Pipelines often use multiple storage systems because raw archival, transactional access, analytics, and search have different access patterns.\n\nDo not choose storage based on popularity. Choose it based on query pattern, consistency, scale, data shape, retention, and cost."
+                  },
+                  {
+                    "id": "3a52368b-d76e-4f87-ad9c-00d78e165f08",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "513c6019-2af4-4174-8178-e801c5a7ac4e",
+                      "title": "Operational relational databases",
+                      "children": [
+                        {
+                          "id": "a30ae76b-9e31-4cbe-806f-dc0175c5364c",
+                          "type": "text",
+                          "content": "Examples: PostgreSQL, MySQL.\n\nUse for:\n- Strong relational structure\n- Transactions\n- Constraints\n- Point reads and moderate joins\n- Source-of-truth application state\n\nAdvantages:\n- ACID transactions\n- Rich querying\n- Mature indexing\n\nTradeoffs:\n- Large analytical scans can interfere with transactional workloads\n- Horizontal write scaling is more complex than many NoSQL systems\n\nA pipeline should generally avoid running massive analytics queries directly against the primary transactional database."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "c4fcb0ed-c1d4-424d-9dbd-5f8909720a3e",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "a51143f0-e5ad-46cb-85be-26d4b78c00b5",
+                      "title": "NoSQL stores",
+                      "children": [
+                        {
+                          "id": "bcb28f92-1014-4ec2-a5a5-3edde069c002",
+                          "type": "text",
+                          "content": "Examples include DynamoDB, Cassandra, MongoDB, and key-value stores.\n\nUse when:\n- Access patterns are known and simple\n- Horizontal scaling is important\n- Very high read/write throughput is expected\n- Flexible document structures are useful\n\nTradeoffs vary by product but may include weaker joins, denormalization, partition-key design, and different consistency models.\n\nIn an interview, name the specific reason NoSQL is useful instead of saying only \"it scales better.\""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "924bed2f-6661-448e-91b5-e1327ba792b2",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "9c3f4a70-3deb-4bd1-acfd-1a2e34895a76",
+                      "title": "Object storage and data lakes",
+                      "children": [
+                        {
+                          "id": "974a0bd6-b8a4-44c5-8944-65dad0d3580e",
+                          "type": "text",
+                          "content": "Examples: Amazon S3, Google Cloud Storage, Azure Blob Storage.\n\nUse for:\n- Cheap durable retention\n- Raw event archives\n- Large files\n- Data lake storage\n- Reprocessing historical data\n\nAdvantages:\n- Very high durability\n- Low storage cost\n- Massive scalability\n\nTradeoffs:\n- Not designed for low-latency row-by-row transactional queries\n- File organization and metadata management matter\n\nCommon analytical formats: Parquet and ORC.\n\nFor many pipelines, object storage is the safest long-term raw-data retention layer because it enables replay or backfills later."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "eb9cbf74-9a2d-4c3a-85dd-0b9dd6238b25",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "4ee5bafa-43e1-434d-9f6b-d4f18137b0f0",
+                      "title": "Data warehouse",
+                      "children": [
+                        {
+                          "id": "9a10f5a3-ad82-4e82-95e9-2ad2d492d455",
+                          "type": "text",
+                          "content": "Examples: Snowflake, BigQuery, Redshift.\n\nUse for:\n- OLAP queries\n- Large aggregations\n- BI dashboards\n- Analyst SQL\n- Historical reporting\n\nWarehouses are optimized for scanning many rows and fewer columns rather than high-frequency transactional writes.\n\nAdvantages:\n- Powerful analytical SQL\n- Columnar execution\n- Strong aggregation performance\n\nTradeoffs:\n- Can be expensive for poorly controlled queries\n- Usually not the transactional source of truth\n- Freshness may depend on loading strategy"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "f2ab7831-66dd-412c-b0b9-4a5b2d0d6c67",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "bf8385f2-ebed-4d83-99fe-40b3d9ed6c7c",
+                      "title": "Lakehouse",
+                      "children": [
+                        {
+                          "id": "089a888f-8068-46a2-a5fd-dafb164811bb",
+                          "type": "text",
+                          "content": "A lakehouse combines low-cost object storage with table formats and metadata that support warehouse-like querying and ACID-style behavior.\n\nCommon table formats: Delta Lake, Apache Iceberg, Apache Hudi.\n\nUse when:\n- Large data lake scale is needed\n- Multiple compute engines should query the same storage\n- Schema evolution and table management are important\n\nTradeoff: architecture and tooling can be more complex than simply using a managed warehouse."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "f90f76ea-2ea2-484b-96c0-d119ac326e6d",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "940293c0-ee07-464d-81a1-2abf714b81e3",
+                      "title": "Search indexes",
+                      "children": [
+                        {
+                          "id": "661beb60-0f58-4a5f-87e6-f7a28772eec9",
+                          "type": "text",
+                          "content": "Examples: Elasticsearch, OpenSearch.\n\nUse when consumers need:\n- Full-text search\n- Relevance ranking\n- Flexible filtering\n- Aggregations optimized for search-oriented workloads\n\nSearch indexes are usually **derived stores**, not the authoritative source of truth.\n\nA common pipeline is:\n\n**Primary DB → CDC/events → indexer → Elasticsearch**\n\nTradeoffs:\n- Eventual consistency with source database\n- Index rebuilding and mapping management\n- Additional operational cost"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "292bef98-4020-4115-80ca-5e698b488580",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "c478a766-aeb7-455e-91cc-fa61835ed212",
+                      "title": "Time-series databases",
+                      "children": [
+                        {
+                          "id": "19041011-147f-4432-86a7-5a75eed22cde",
+                          "type": "text",
+                          "content": "Examples: TimescaleDB, InfluxDB, Prometheus-style storage.\n\nUse for:\n- Metrics\n- Sensor measurements\n- Monitoring data\n- Time-range queries and aggregations\n\nThese systems optimize timestamp-based access and retention.\n\nNot necessary for general business data unless time-series query patterns dominate."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "7499896e-ad69-4093-8a47-9ccb1cb2ca37",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "0c4b3bc7-6156-48d4-ab51-bae28583a89b",
+                      "title": "Partitioning and retention",
+                      "children": [
+                        {
+                          "id": "9d28e47f-8ae9-4e2a-b5f8-063b5b547cba",
+                          "type": "text",
+                          "content": "Large datasets need lifecycle strategy.\n\nPartition commonly by:\n- Date/time\n- Tenant\n- Region\n- Hash key\n\nRetention can use tiers:\n- Hot: recent, fast-access data\n- Warm: less frequently accessed\n- Cold/archive: cheap object storage\n\nInterview questions to ask:\n- How long must raw data be retained?\n- Can old data be deleted?\n- Is legal/audit retention required?\n- Do consumers query recent data differently from historical data?"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "95e80ccd-6ec6-4f25-aa34-bd4918700e92",
+              "type": "accordion",
+              "accordion": {
+                "id": "9ab508d5-28d1-42a7-80ba-efbefb6c007e",
+                "title": "7. Serving and Query Layer",
+                "children": [
+                  {
+                    "id": "6277f3be-6108-41ef-b4b4-59f640107350",
+                    "type": "text",
+                    "content": "The serving layer makes processed data available to applications, analysts, dashboards, or models. It often exists because the best storage for ingestion is not the best storage for low-latency reads."
+                  },
+                  {
+                    "id": "e20b6465-1f0d-478a-8f30-9937b1c06c7e",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "7a05c701-5cf1-4123-9fd4-42c8c049198d",
+                      "title": "Direct warehouse queries",
+                      "children": [
+                        {
+                          "id": "50f50764-acf6-46b8-bb6d-147d5e34284f",
+                          "type": "text",
+                          "content": "For internal analytics, dashboards can sometimes query a warehouse directly.\n\nAdvantages:\n- Simple architecture\n- Flexible SQL\n\nTradeoffs:\n- Query latency may be seconds rather than milliseconds\n- Heavy dashboards can increase cost\n- Concurrency controls may be required\n\nSuitable for BI and internal reporting, but usually not for latency-sensitive end-user APIs."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "98099dc1-82bf-4887-ba09-423e2f64c2c5",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "e5a9264d-fa22-472f-bc3c-f44a5e0c9c84",
+                      "title": "Serving database",
+                      "children": [
+                        {
+                          "id": "cfbccecd-9e62-45fb-bafe-6c70ee4600d9",
+                          "type": "text",
+                          "content": "Precomputed pipeline outputs can be written into a serving database optimized for API access.\n\nExamples:\n- PostgreSQL for relational reads\n- DynamoDB/Cassandra for key-based scale\n- Redis for very hot aggregates\n\nPattern:\n\n**stream/batch processor → serving store → API → client**\n\nUse this when users need low-latency results that would be too expensive to compute from raw data on demand."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "7d55b0c0-a098-49a2-a039-766c8b1af628",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "cdd56ea5-300e-48d9-a5fb-27a5276ba52e",
+                      "title": "Materialized views and precomputation",
+                      "children": [
+                        {
+                          "id": "e02a41f9-fab6-4632-8747-78148d556f06",
+                          "type": "text",
+                          "content": "Instead of calculating expensive aggregates for every request, compute them ahead of time.\n\nExamples:\n- Daily sales per merchant\n- Top products per category\n- User recommendation candidates\n\nAdvantages:\n- Fast reads\n- Predictable API latency\n\nTradeoffs:\n- Data may be stale\n- More storage and update complexity\n\nInterview question: how fresh does the result need to be? That determines whether precomputation can run hourly, every minute, or continuously."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "5fb5f962-5c53-47a0-8eb5-9c0290cbb6ba",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "f6558779-8fab-4b4e-8458-1f7717143734",
+                      "title": "Caching",
+                      "children": [
+                        {
+                          "id": "05e11638-34d3-4c72-85f6-ac43029bcbbd",
+                          "type": "text",
+                          "content": "Redis or another cache can sit in front of a serving database when the same processed results are read repeatedly.\n\nCommon pattern: cache-aside.\n\n1. API checks Redis\n2. On hit, return cached value\n3. On miss, query serving store\n4. Store result with TTL\n\nTradeoffs:\n- Staleness\n- Invalidation complexity\n- Cache stampede risk\n\nCaching is not mandatory. Add it when the database or computation is a bottleneck or latency requirement justifies it."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "71ff942e-3ea8-4a1b-90bd-4b3a46609a9b",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "344b8f69-0261-4b52-9eb0-eac340829945",
+                      "title": "API layer",
+                      "children": [
+                        {
+                          "id": "b69a7a49-5b52-4464-927e-7790a14fa034",
+                          "type": "text",
+                          "content": "A serving API provides a stable contract between stored/processed data and clients.\n\nResponsibilities can include:\n- Authentication and authorization\n- Pagination\n- Filtering\n- Rate limiting\n- Response shaping\n- Cache headers\n\nFor internal BI systems, direct SQL may be sufficient. For customer-facing products, an API is usually preferred."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "f12a7b07-9c39-4b40-b30e-fdefb69574a3",
+              "type": "accordion",
+              "accordion": {
+                "id": "3ea72d13-ee09-464a-a8fc-94d47764db54",
+                "title": "8. Consumers",
+                "children": [
+                  {
+                    "id": "f1085c45-4e67-437a-92d7-38ec52105fdb",
+                    "type": "text",
+                    "content": "Consumers determine what freshness, correctness, latency, and query patterns the pipeline must support.\n\nAlways identify the consumer before over-designing the pipeline."
+                  },
+                  {
+                    "id": "ad811239-4780-4ec8-933d-0fca257d2e3e",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "ba91bd8b-3029-4b80-aca7-3967a0dcc86a",
+                      "title": "Analytics and BI",
+                      "children": [
+                        {
+                          "id": "6f61c0cc-a4ac-4ec1-8ae1-8618866150ac",
+                          "type": "text",
+                          "content": "Typical consumers: dashboards, analysts, finance, product analytics.\n\nUsually tolerate seconds-to-hours of latency depending on the use case.\n\nCommon architecture:\n**events → broker/object store → transformations → warehouse → BI tool**\n\nBatch or micro-batch processing is often sufficient."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "135cb9da-f837-4cb3-97b5-569f9aa30717",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "5b7ff9ea-93a9-45c4-bb2c-a4d93e0b479c",
+                      "title": "Operational applications",
+                      "children": [
+                        {
+                          "id": "6cdcb4e2-3a37-45ee-9ff9-ac8867097302",
+                          "type": "text",
+                          "content": "Application features may consume pipeline outputs, such as recommendations, fraud scores, or activity feeds.\n\nThese consumers often require much lower latency than BI.\n\nA common architecture writes processed results into a dedicated serving store or cache rather than querying the warehouse during user requests."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "bdf220e0-cd18-4615-9068-87563b5b2f88",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "389eedd1-e045-49d1-8855-75a06ef3d036",
+                      "title": "Machine learning training",
+                      "children": [
+                        {
+                          "id": "3aaa194b-ec6f-4e65-be95-8f55faca0a55",
+                          "type": "text",
+                          "content": "ML training consumes large historical datasets.\n\nCommon requirements:\n- Reproducible snapshots\n- Feature consistency\n- Large sequential scans\n- Versioned datasets\n- Raw history retention\n\nObject storage/lakehouse and warehouse systems are common sources.\n\nThe important system-design distinction is that training is usually throughput-oriented rather than low-latency."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "ad1d1d70-1550-48ea-805d-dd3cae393eb6",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "79aeb483-4ffc-40ce-b917-4ff95dc185a2",
+                      "title": "Online inference and feature serving",
+                      "children": [
+                        {
+                          "id": "1058324a-3f0f-46c7-b2b1-e9407bcddcc2",
+                          "type": "text",
+                          "content": "Online inference requires low-latency access to model inputs and possibly precomputed features.\n\nTypical flow:\n**events → feature pipeline → online feature store/cache → inference service**\n\nOffline and online feature values must remain logically consistent to reduce training-serving skew.\n\nFor a general mid-level interview, mention feature stores only when the system actually involves ML features or online inference."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "614803d6-088e-4d59-9c3c-59b4c15e121d",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "ff67cf4c-10ea-4055-aeb8-0681e2722beb",
+                      "title": "Alerts and automation",
+                      "children": [
+                        {
+                          "id": "34d401fb-b88a-4849-9154-4f5c3b9400b0",
+                          "type": "text",
+                          "content": "Consumers can trigger side effects such as alerts, emails, fraud blocks, or workflow automation.\n\nImportant concerns:\n- Idempotency\n- Retry policy\n- Rate limiting\n- Escalation\n- Avoiding duplicate notifications\n\nThese side-effecting consumers deserve stronger correctness controls than purely analytical consumers."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "4fa61fd3-1309-4c53-aac6-f1bb4a2011cc",
+              "type": "accordion",
+              "accordion": {
+                "id": "805ae6f8-39b8-4f16-ae06-1972e22c01f2",
+                "title": "9. Cross-Cutting Concerns",
+                "children": [
+                  {
+                    "id": "dd85a295-f9f6-47e6-9489-2a12175cdb29",
+                    "type": "text",
+                    "content": "These are not individual pipeline stages, but they should be discussed when they materially affect the design."
+                  },
+                  {
+                    "id": "ac197e91-2513-472d-9269-2baecddcbb19",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "fbb24626-f7c1-4755-83b2-d71012045b8d",
+                      "title": "Reliability and failure handling",
+                      "children": [
+                        {
+                          "id": "6e27c702-3863-494a-9e7d-72c56a0c39b9",
+                          "type": "text",
+                          "content": "Key mechanisms:\n- Retries with exponential backoff and jitter\n- Idempotent consumers\n- Dead-letter queues\n- Checkpointing\n- Durable broker retention\n- Replication\n- Reprocessing/backfills\n- Circuit breakers for external dependencies\n\nFor each stage, ask: **What happens if this component is unavailable for five minutes?**\n\nA durable queue can let producers continue while consumers recover. Without buffering, upstream systems may need to fail requests or block."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "f12c33b8-6df0-4ecb-813e-1f8b2172429d",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "8ed3b67f-dbd4-4a98-a49a-afae18d6b0f5",
+                      "title": "Replay and backfills",
+                      "children": [
+                        {
+                          "id": "35c5e823-af3c-4f26-9d54-bb711891cb53",
+                          "type": "text",
+                          "content": "Replay means processing historical events again, usually after a bug fix, new feature, or downstream rebuild.\n\nWays to enable replay:\n- Retain events in Kafka long enough\n- Store raw immutable events in object storage\n- Keep source snapshots\n\nBackfills are especially important for analytics and ML systems.\n\nTradeoff: retaining raw data increases storage and governance obligations, but dramatically improves recoverability."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "7b18a929-009d-4608-8ac7-71cb3e248301",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "ebac449d-8004-4a0c-869a-c309d2cdb0a6",
+                      "title": "Scalability",
+                      "children": [
+                        {
+                          "id": "2b309ebe-a145-4d87-9d08-d2266c76ffce",
+                          "type": "text",
+                          "content": "Scale each stage independently.\n\nCommon techniques:\n- Partition streams\n- Add consumer instances\n- Batch writes\n- Use parallel object-store files\n- Partition warehouse tables\n- Autoscale workers based on queue depth or lag\n\nLook for the actual bottleneck before scaling everything. The slowest stage determines end-to-end throughput."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "6e82de4a-2e57-4a6c-bb9d-2ec143ab8f2d",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "d04b2d0e-3fbb-4a4c-a59f-8f9258b8fb4a",
+                      "title": "Observability",
+                      "children": [
+                        {
+                          "id": "e5caa70e-fc1a-4328-a059-668bc656c717",
+                          "type": "text",
+                          "content": "A production pipeline should expose:\n\n### Metrics\n- Ingestion rate\n- Processing rate\n- Queue depth\n- Consumer lag\n- End-to-end event latency\n- Error rate\n- Retry count\n- DLQ size\n- Data freshness\n\n### Logs\nStructured processing failures and important state transitions.\n\n### Traces\nUseful when an event travels through multiple services.\n\n### Alerts\nAlert on symptoms such as growing lag, stale data, repeated failures, or missing partitions.\n\nFor interviews, **consumer lag and data freshness** are particularly useful pipeline-specific metrics to mention."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "e820824c-e183-467d-9c28-f97f623b7aed",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "c5423f82-b69e-482d-bf8e-92b5d140e293",
+                      "title": "Data quality",
+                      "children": [
+                        {
+                          "id": "24b76708-3c08-417e-b71b-7816649ccca1",
+                          "type": "text",
+                          "content": "A pipeline can be technically available while producing incorrect data.\n\nData-quality checks may include:\n- Schema validation\n- Null checks\n- Range checks\n- Referential integrity\n- Duplicate detection\n- Row-count comparisons\n- Freshness tests\n- Distribution/anomaly tests\n\nFor analytics pipelines, tools such as dbt tests or data-quality frameworks can automate these checks."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "c232b629-d7e6-4a1e-8a04-7d2515504d47",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "38b968d8-86dd-4a02-ae55-331663e10b3a",
+                      "title": "Security and privacy",
+                      "children": [
+                        {
+                          "id": "074a8d86-e883-49fb-80f5-c5556391b3e6",
+                          "type": "text",
+                          "content": "Important controls:\n- Encryption in transit and at rest\n- Least-privilege service identities\n- Secret management\n- Access control to topics, buckets, and warehouses\n- PII classification\n- Tokenization or anonymization\n- Audit logging\n- Retention/deletion policies\n\nA common design mistake is copying sensitive data into many downstream systems without considering deletion obligations or access controls."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "22ac062e-1e84-41dd-8f78-c50d28c84194",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "ab6d8202-2de3-4df4-b355-123a383a53e6",
+                      "title": "Schema evolution",
+                      "children": [
+                        {
+                          "id": "a741b6c2-44b8-480e-abcd-1c0d4fc979de",
+                          "type": "text",
+                          "content": "Events change over time.\n\nSafer changes:\n- Add optional fields\n- Provide defaults\n- Version schemas when necessary\n\nRiskier changes:\n- Renaming or removing fields\n- Changing field meaning or type\n\nA schema registry can enforce backward/forward compatibility.\n\nConsumers should tolerate fields they do not understand when possible."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "25447807-b319-4f19-9be2-ef6b28693ea6",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "48093cf9-e580-4e06-aa14-dc154ec4660e",
+                      "title": "Cost",
+                      "children": [
+                        {
+                          "id": "dae65278-d476-4be2-b5a9-e4c869dcd1c6",
+                          "type": "text",
+                          "content": "Pipeline cost often comes from:\n- Broker retention\n- Cross-region/network transfer\n- Warehouse scans\n- Compute-heavy transformations\n- High-cardinality logs/metrics\n- Duplicate copies of data\n\nCost optimizations include partition pruning, columnar storage, batching, compression, lifecycle policies, and reducing unnecessary retention.\n\nIn interviews, mention cost when comparing a simple managed solution with a highly customized distributed stack."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "83d0eeff-56e6-4ae4-bd13-fb30c53d261f",
+              "type": "accordion",
+              "accordion": {
+                "id": "6a48880c-08af-4fa7-bd82-195f06e08864",
+                "title": "10. Common End-to-End Pipeline Patterns",
+                "children": [
+                  {
+                    "id": "7bfb779e-db3b-47b1-80f9-880a2b8b6d9a",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "275a994a-216b-4295-94b4-b32ca17e5c20",
+                      "title": "Simple asynchronous job pipeline",
+                      "children": [
+                        {
+                          "id": "f35f05f3-8fb5-4fde-ac46-35357c43eebb",
+                          "type": "text",
+                          "content": "**API → Queue → Worker → Database/Object Store**\n\nUse for:\n- Emails\n- Image processing\n- Document conversion\n- Non-urgent background jobs\n\nUsually enough:\n- Managed queue\n- Stateless workers\n- Retries\n- DLQ\n- Idempotency\n\nKafka or stream processors are usually unnecessary here."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "3d12fff2-82cd-40cb-ad85-633515afd877",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "ef21d083-e355-47ee-a673-76bc9b8e758e",
+                      "title": "Product analytics pipeline",
+                      "children": [
+                        {
+                          "id": "0c1089ca-15cc-4e8b-be49-269912cf3b13",
+                          "type": "text",
+                          "content": "**Browser/Mobile → Event Collector → Kafka/Kinesis → Object Store/Warehouse → Transformations → BI**\n\nUseful additions at scale:\n- Schema registry\n- Stream processor for near-real-time metrics\n- Raw immutable archive\n- Data-quality checks\n\nTradeoff: real-time dashboards require more complexity than hourly batch reports."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "77be670f-a015-4910-a210-fb9d7354d045",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "21982dca-5119-4211-9094-e0170091fa98",
+                      "title": "CDC to search index",
+                      "children": [
+                        {
+                          "id": "a09ed3e4-3616-4f2a-a5ff-337a8b0c2664",
+                          "type": "text",
+                          "content": "**Primary DB → CDC → Kafka/topic → Indexer → Elasticsearch/OpenSearch**\n\nUse when search queries should not run directly against the transactional database.\n\nImportant concerns:\n- Eventual consistency\n- Deletes/tombstones\n- Rebuilding the full index\n- Ordering updates per record\n- Idempotent indexing"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "275ef44f-663a-4eab-85bd-7008337f4b5c",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "058001eb-9991-4f75-a0c1-798d3793ee8e",
+                      "title": "Fraud detection pipeline",
+                      "children": [
+                        {
+                          "id": "faa3e53c-c17c-4264-ba1d-0c5ea2a0ec52",
+                          "type": "text",
+                          "content": "**Transaction Event → Broker → Stateful Stream Processor → Rules/Model → Decision Store/API/Alert**\n\nRequirements often include:\n- Low latency\n- Stateful windows\n- Per-account ordering\n- Deduplication\n- Highly observable lag\n\nA batch pipeline would usually be inappropriate if blocking suspicious activity must happen in seconds."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "8561d8a5-a7fb-4475-99f6-d68f0359e167",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "38da1d4a-92f8-4632-955e-b551cf7bc01e",
+                      "title": "ML training pipeline",
+                      "children": [
+                        {
+                          "id": "b9c9d833-ac8e-4ee3-9434-7dbc5f7f9826",
+                          "type": "text",
+                          "content": "**Raw Events/DB Snapshots → Object Store/Lakehouse → Batch Processing → Feature Dataset → Training → Model Registry**\n\nKey considerations:\n- Dataset versioning\n- Reproducibility\n- Feature definitions\n- Backfills\n- Data validation\n\nThis is primarily throughput- and reproducibility-oriented rather than low-latency."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "e6e65a73-4155-480f-ac17-549d6e478d61",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "eb76d797-fdd8-4a64-a6fc-387349cb8a1f",
+                      "title": "Real-time recommendation pipeline",
+                      "children": [
+                        {
+                          "id": "72a60f7e-58c0-4f4f-b408-273a5bae7a82",
+                          "type": "text",
+                          "content": "One possible architecture:\n\n**User events → Kafka → Stream processor → online feature store/cache → recommendation service**\n\nIn parallel:\n\n**raw events → object store/warehouse → offline training → model registry → deployed model**\n\nImportant interview topics:\n- Freshness of online features\n- Training-serving consistency\n- Stream lag\n- Fallback recommendations if the feature pipeline is unavailable"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "74b48de0-1e22-4dd9-8515-894cf1fad16d",
+              "type": "accordion",
+              "accordion": {
+                "id": "a7ed311f-c49f-4036-90b3-dd92eb81a268",
+                "title": "11. What Is Usually Necessary vs Optional",
+                "children": [
+                  {
+                    "id": "4a772dc6-55e1-4499-9b95-98442047bc39",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "9edf4b4f-a112-4cb0-b5c8-95546c1b0c5a",
+                      "title": "Usually necessary",
+                      "children": [
+                        {
+                          "id": "f5e8cacb-4b3b-4056-acef-e3f149fe8f56",
+                          "type": "text",
+                          "content": "For almost any meaningful pipeline, identify:\n\n- Data source\n- Ingestion method\n- Processing behavior\n- Storage destination\n- Consumer\n- Failure/retry behavior\n- Basic observability\n\nEven if some stages are combined into one service, the concepts should be clear."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "38cef2f5-5392-4de4-9ee8-7c76ee14d3ba",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "c11b5618-ff1e-4f43-a10d-bc77adb787d1",
+                      "title": "Common but requirement-dependent",
+                      "children": [
+                        {
+                          "id": "b8ab3df5-a123-4537-91e0-bc44bac15f57",
+                          "type": "text",
+                          "content": "Use only when justified:\n\n- Message queue or event stream\n- Cache\n- CDC\n- Data warehouse\n- Object-store archive\n- Stream processor\n- Search index\n- Schema registry\n- DLQ\n- Dedicated serving database\n\nThese become appropriate as scale, reliability, replay, latency, or team boundaries demand them."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "29b9a485-d10f-4997-b678-937cd0a980f0",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "2c44ae2f-4c4d-4a36-ba65-dc1d2658432c",
+                      "title": "Often overused in interviews",
+                      "children": [
+                        {
+                          "id": "7d2bf34e-ffee-41d0-ae49-bed1e7a23ac4",
+                          "type": "text",
+                          "content": "Do not automatically add:\n\n- Kafka when a simple queue is enough\n- Spark for a small dataset\n- Flink for basic asynchronous jobs\n- Multiple databases without distinct access patterns\n- A feature store when no ML feature-serving problem exists\n- Microservices for every transformation\n- Exactly-once claims without explaining scope and mechanism\n\nComplexity is a cost. A simpler design that satisfies requirements is usually stronger than a technology-heavy diagram."
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "27a7a61f-5fab-4452-b5d2-70971227a861",
+              "type": "accordion",
+              "accordion": {
+                "id": "157e879e-a8a0-442a-93ac-7cfa876c3a86",
+                "title": "12. Mid-Level Interview Checklist",
+                "children": [
+                  {
+                    "id": "3b3c4fe4-8b91-4d25-aa90-0365682de713",
+                    "type": "text",
+                    "content": "When a data pipeline appears in a system design interview, walk through this checklist:\n\n1. **Source** — What creates the data?\n2. **Volume/velocity** — How much data and how quickly?\n3. **Freshness** — Milliseconds, seconds, minutes, or hours?\n4. **Ingestion** — API, direct publish, CDC, polling, file drop?\n5. **Buffering** — Do we need a queue or event stream?\n6. **Partitioning/order** — What must stay ordered?\n7. **Processing** — Stateless, stateful, batch, streaming?\n8. **Storage** — Operational DB, object store, warehouse, search index?\n9. **Serving** — How do consumers query the result?\n10. **Consumers** — Dashboard, service, ML, alerts?\n11. **Failure handling** — Retry, idempotency, DLQ, replay?\n12. **Observability** — Throughput, lag, errors, freshness?\n13. **Security/data quality** — PII, validation, access control?\n14. **Tradeoffs** — Why this design instead of the simpler alternative?\n\nA good answer typically starts simple and evolves:\n\n**Source → Processor → Storage**\n\nthen, if needed:\n\n**Source → Ingestion → Broker → Processor → Storage → Serving → Consumer**\n\nand finally adds only the cross-cutting mechanisms justified by the requirements."
+                  },
+                  {
+                    "id": "e42d5017-d500-425b-9860-5f6ce1b3708d",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "9f4a8a6c-76ee-4d10-a482-a104b65de009",
+                      "title": "How to explain each component",
+                      "children": [
+                        {
+                          "id": "cf3aaf88-2b7d-4922-9800-d77068ff904a",
+                          "type": "text",
+                          "content": "For every box you draw, use this sentence structure:\n\n**\"I am using X because requirement Y creates problem Z. X solves it by A. The main tradeoff is B. If we did not need Y, I would choose simpler alternative C.\"**\n\nExample:\n\n**\"I am using Kafka because multiple independent consumers need the same high-volume event stream and replay is valuable. Kafka gives durable partitioned logs and consumer groups. The tradeoff is additional operational complexity. If this were only a background email queue, I would use a simpler managed queue such as SQS.\"**\n\nThis style demonstrates system-design reasoning rather than memorized component names."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "54418d75-712f-4f8c-8542-8072d281e321",
+                    "type": "accordion",
+                    "accordion": {
+                      "id": "93066330-df0e-4fc3-8ba8-85af155edad0",
+                      "title": "High-value deep-dive topics",
+                      "children": [
+                        {
+                          "id": "e5916849-2869-406c-bd26-d3d2572f3327",
+                          "type": "text",
+                          "content": "If the interviewer asks you to go deeper, the most useful topics are:\n\n- Queue vs stream\n- Kafka partitions and consumer groups\n- At-least-once delivery and idempotency\n- CDC and transactional outbox\n- Batch vs streaming\n- Stateful processing and windowing\n- Data warehouse vs operational database\n- Raw object-store retention and replay\n- Consumer lag and backpressure\n- DLQs and retry strategy\n- Schema evolution\n- Serving-store and caching strategy\n\nThese topics reveal tradeoff reasoning without requiring extremely specialized distributed-systems theory."
+                        }
+                      ]
+                    }
                   }
                 ]
               }
